@@ -1,6 +1,7 @@
 const urlsML = [
   // Deportes
   "https://articulo.mercadolibre.com.ar/MLA-1446036033-raqueta-de-tenis-prince-quantum-powerline-liquidacion-_JM",
+  "https://articulo.mercadolibre.com.ar/MLA-1446547373-raquetas-de-tenis-para-entrenamiento-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1897421802-raqueta-de-tenis-sufix-nano-energy-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1451624863-escudos-paos-tibiales-markick-para-boxeo-kick-boxing-mma-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1931372874-botines-de-futbol-adidas-nro-415-liquidacion-_JM",
