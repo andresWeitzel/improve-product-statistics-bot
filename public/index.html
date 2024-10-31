@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Historial de Productos</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .lamp {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 10px;
+      }
+      .ok {
+        background-color: green;
+      }
+      .fail {
+        background-color: red;
+      }
+      #statusTable {
+        display: none; /* Ocultar la tabla inicialmente */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Historial de Visitas a Productos (ML)</h1>
+    <button id="toggleButton">Mostrar Historial</button>
+
+    <table id="statusTable">
+      <thead>
+        <tr>
+          <th>Estado</th>
+          <th>ID</th>
+          <th>Producto</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="statusContainer"></tbody>
+    </table>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      const statusContainer = document.getElementById("statusContainer");
+      const statusTable = document.getElementById("statusTable");
+      const toggleButton = document.getElementById("toggleButton");
+      let productCount = 0;
+
+      // Mostrar la tabla de manera predeterminada
+      statusTable.style.display = "table"; // Mostrar tabla inicialmente
+      toggleButton.textContent = "Cerrar Historial"; // Cambiar texto del botón a "Cerrar Historial"
+
+      toggleButton.addEventListener("click", () => {
+        if (statusTable.style.display === "table") {
+          statusTable.style.display = "none"; // Ocultar tabla
+          toggleButton.textContent = "Mostrar Historial"; // Cambiar texto del botón
+          statusContainer.innerHTML = ""; // Limpiar la tabla al cerrarla
+        } else {
+          statusTable.style.display = "table"; // Mostrar tabla
+          toggleButton.textContent = "Cerrar Historial"; // Cambiar texto del botón
+          updateTable(); // Llamar a la función para mostrar el estado actual
+        }
+      });
+
+      socket.on("update", ({ id, status, product, datetime }) => {
+        const row = document.createElement("tr");
+
+        const statusCell = document.createElement("td");
+        const lamp = document.createElement("div");
+        lamp.className = "lamp " + (status === "ok" ? "ok" : "fail");
+        statusCell.appendChild(lamp);
+
+        const idCell = document.createElement("td");
+        idCell.textContent = id;
+
+        const productCell = document.createElement("td");
+        productCell.textContent = product;
+
+        const dateCell = document.createElement("td");
+        dateCell.textContent = datetime;
+
+        row.appendChild(statusCell);
+        row.appendChild(idCell);
+        row.appendChild(productCell);
+        row.appendChild(dateCell);
+        statusContainer.appendChild(row);
+
+        productCount++;
+
+        if (productCount >= 15) {
+          productCount = 0; // Reset counter
+          location.reload(); // Refresh the page
+        }
+      });
+    </script>
+  </body>
+</html>
