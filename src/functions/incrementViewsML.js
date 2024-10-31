@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const { urlsML, userAgents } = require("../const/web");
 const { updateDateTime } = require("../utils/dateTime");
+const { getNameFromUrlML } = require("../utils/conversions");
 
 let currentIndex = 0;
 let visitCounter = 0;
@@ -13,7 +14,9 @@ async function incrementViewsML(io) {
   }
 
   const url = urlsML[currentIndex];
-  const pathProduct = url.split(".ar/")[1];
+
+  const nameProduct = await getNameFromUrlML(url);
+
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
 
@@ -25,34 +28,42 @@ async function incrementViewsML(io) {
   try {
     await page.goto(url, { timeout: 0 });
     console.log(
-      `ID: ${currentIndex + 1} | STATUS : abierta | PRODUCTO : ${pathProduct} | DATETIME: ${updateDateTime()}`
+      `ID: ${
+        currentIndex + 1
+      } | STATUS : abierta | PRODUCTO : ${nameProduct} | DATETIME: ${updateDateTime()}`
     );
 
     // Enviar actualización al cliente con estado OK
     io.emit("update", {
       id: currentIndex + 1,
       status: "ok",
-      product: pathProduct,
+      product: nameProduct,
       datetime: updateDateTime(),
     });
   } catch (error) {
     console.log(
-      `ID: ${currentIndex + 1} | STATUS : fallida | PRODUCTO : ${pathProduct} | DATETIME: ${updateDateTime()}`
+      `ID: ${
+        currentIndex + 1
+      } | STATUS : fallida | PRODUCTO : ${nameProduct} | DATETIME: ${updateDateTime()}`
     );
 
     // Enviar actualización al cliente con estado fallido
     io.emit("update", {
       id: currentIndex + 1,
       status: "fail",
-      product: pathProduct,
+      product: nameProduct,
     });
   } finally {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await browser.close();
     console.log(
-      `ID: ${currentIndex + 1} | STATUS : cerrada | PRODUCTO : ${pathProduct} | DATETIME: ${updateDateTime()}`
+      `ID: ${
+        currentIndex + 1
+      } | STATUS : cerrada | PRODUCTO : ${nameProduct} | DATETIME: ${updateDateTime()}`
     );
-    console.log("----------------------------------------------------------------");
+    console.log(
+      "----------------------------------------------------------------"
+    );
     currentIndex++;
     setTimeout(() => incrementViewsML(io), 2000); // Llamada recursiva con retardo
   }
