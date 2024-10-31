@@ -38,6 +38,7 @@ async function incrementViewsML(io) {
       id: currentIndex + 1,
       status: "ok",
       product: nameProduct,
+      url:url,
       datetime: updateDateTime(),
     });
   } catch (error) {
@@ -52,6 +53,8 @@ async function incrementViewsML(io) {
       id: currentIndex + 1,
       status: "fail",
       product: nameProduct,
+      url:url,
+      datetime: updateDateTime(),
     });
   } finally {
     await new Promise((resolve) => setTimeout(resolve, 1000));

@@ -5,9 +5,10 @@ const urlsML = [
   "https://articulo.mercadolibre.com.ar/MLA-1897421802-raqueta-de-tenis-sufix-nano-energy-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1451624863-escudos-paos-tibiales-markick-para-boxeo-kick-boxing-mma-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1931372874-botines-de-futbol-adidas-nro-415-liquidacion-_JM",
-  // Reliquias
+  // Antiguedades-coleccion
   "https://articulo.mercadolibre.com.ar/MLA-1446952039-antigua-brujula-militar-suiza-plan-ltd-neuchatel-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1899107620-antiguos-binoculares-de-teatro-25-green-japan-liquidacion-_JM",
+  "https://articulo.mercadolibre.com.ar/MLA-1456215693-vaso-chop-de-cerveza-isenbeck-importado-de-coleccion-1l-_JM",
   // Teclados
   "https://articulo.mercadolibre.com.ar/MLA-1939367090-teclado-noganet-nkb-78033-multimedia-mini-usb-pc-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1457973059-teclado-noganet-nkb-78033-multimedia-mini-usb-pc-color-del-teclado-negro-idioma-espanol-latinoamerica-_JM",
@@ -29,6 +30,8 @@ const urlsML = [
   "https://articulo.mercadolibre.com.ar/MLA-1910665652-coleccion-libros-agatha-christie-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1919187710-libros-de-artes-marciales-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1931256972-libro-shakespeare-comedias-liquidacion-_JM",
+  //Otros
+  "https://articulo.mercadolibre.com.ar/MLA-1450484881-oso-gigante-phi-phi-toys-_JM"
 ];
 
 const userAgents = [

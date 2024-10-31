@@ -7,9 +7,9 @@ async function getNameFromUrlML(url) {
   // Elimina los últimos 4 caracteres y guiones
   let lastFormat = firstFormat.slice(0, -4).replace(/-/g, " ");
 
-  // Limita la cantidad de caracteres a 40 y agrega "..." si es necesario
-  let limitedFormat = lastFormat.slice(0, 40);
-  if (lastFormat.length > 40) {
+  // Limita la cantidad de caracteres y agrega "..." si es necesario
+  let limitedFormat = lastFormat.slice(0, 50);
+  if (lastFormat.length > 50) {
     limitedFormat += "...";
   }
 
