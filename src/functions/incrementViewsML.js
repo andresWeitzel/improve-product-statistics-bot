@@ -1,10 +1,11 @@
 const puppeteer = require("puppeteer");
 const { urlsML } = require("../const/web");
-const { updateDateTime } = require("../utils/dateTime");
 const {
   getNameFromUrlML,
   getRandomUserAgent,
 } = require("../utils/conversions");
+const { logStatus } = require("../utils/logging");
+const { emitStatus } = require("../utils/socket");
 
 let currentIndex = 0;
 let visitCounter = 0;
@@ -31,43 +32,23 @@ async function incrementViewsML(io) {
 
   try {
     await page.goto(url, { timeout: 0 });
-    console.log(
-      `ID: ${
-        currentIndex + 1
-      } | STATUS : abierta | PRODUCTO : ${nameProduct} | DATETIME: ${updateDateTime()}`
-    );
 
-    // Enviar actualización al cliente con estado OK
-    io.emit("update", {
-      id: currentIndex + 1,
-      status: "ok",
-      product: nameProduct,
-      url: url,
-      datetime: updateDateTime(),
-    });
+    logStatus(currentIndex + 1, "abierta", nameProduct);
+
+    // Notificar al cliente sobre el estado "ok"
+    await emitStatus(io, currentIndex + 1, "ok", nameProduct, url);
   } catch (error) {
-    console.log(
-      `ID: ${
-        currentIndex + 1
-      } | STATUS : fallida | PRODUCTO : ${nameProduct} | DATETIME: ${updateDateTime()}`
-    );
+    logStatus(currentIndex + 1, "fallida", nameProduct, error);
 
-    // Enviar actualización al cliente con estado fallido
-    io.emit("update", {
-      id: currentIndex + 1,
-      status: "fail",
-      product: nameProduct,
-      url: url,
-      datetime: updateDateTime(),
-    });
+    // Notificar al cliente sobre el estado "fail"
+    emitStatus(io, currentIndex + 1, "fail", nameProduct, url);
   } finally {
     await new Promise((resolve) => setTimeout(resolve, 1000));
+
     await browser.close();
-    console.log(
-      `ID: ${
-        currentIndex + 1
-      } | STATUS : cerrada | PRODUCTO : ${nameProduct} | DATETIME: ${updateDateTime()}`
-    );
+
+    logStatus(currentIndex + 1, "cerrada", nameProduct);
+
     console.log(
       "----------------------------------------------------------------"
     );
