@@ -1,7 +1,10 @@
 const puppeteer = require("puppeteer");
-const { urlsML, userAgents } = require("../const/web");
+const { urlsML } = require("../const/web");
 const { updateDateTime } = require("../utils/dateTime");
-const { getNameFromUrlML } = require("../utils/conversions");
+const {
+  getNameFromUrlML,
+  getRandomUserAgent,
+} = require("../utils/conversions");
 
 let currentIndex = 0;
 let visitCounter = 0;
@@ -17,13 +20,14 @@ async function incrementViewsML(io) {
 
   const nameProduct = await getNameFromUrlML(url);
 
-  const browser = await puppeteer.launch({ headless: false });
+  // El modo new en 'headless' es para que se abra el navegador en segundo plano
+  const browser = await puppeteer.launch({
+    headless: "new",
+    args: ["--window-size=1920,1080"],
+  });
   const page = await browser.newPage();
 
-  // Cambiar aleatoriamente el User-Agent
-  const randomUserAgent =
-    userAgents[Math.floor(Math.random() * userAgents.length)];
-  await page.setUserAgent(randomUserAgent);
+  await page.setUserAgent(getRandomUserAgent());
 
   try {
     await page.goto(url, { timeout: 0 });
@@ -38,7 +42,7 @@ async function incrementViewsML(io) {
       id: currentIndex + 1,
       status: "ok",
       product: nameProduct,
-      url:url,
+      url: url,
       datetime: updateDateTime(),
     });
   } catch (error) {
@@ -53,7 +57,7 @@ async function incrementViewsML(io) {
       id: currentIndex + 1,
       status: "fail",
       product: nameProduct,
-      url:url,
+      url: url,
       datetime: updateDateTime(),
     });
   } finally {

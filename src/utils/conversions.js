@@ -1,4 +1,6 @@
-async function getNameFromUrlML(url) {
+const { userAgents } = require("../const/web");
+
+function getNameFromUrlML(url) {
   const urlSplit = url.split("/").pop();
 
   // Elimina los primeros 15 caracteres
@@ -16,4 +18,8 @@ async function getNameFromUrlML(url) {
   return limitedFormat;
 }
 
-module.exports = { getNameFromUrlML };
+function getRandomUserAgent() {
+  return userAgents[Math.floor(Math.random() * userAgents.length)];
+}
+
+module.exports = { getNameFromUrlML, getRandomUserAgent };

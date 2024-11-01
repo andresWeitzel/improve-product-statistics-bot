@@ -1,0 +1,31 @@
+table {
+    width: 80%; /* Cambiar el ancho a un porcentaje más pequeño */
+    max-width: 600px; /* O establecer un ancho máximo */
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 14px; /* Ajustar el tamaño de la fuente */
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 4px; /* Reducir el padding */
+    text-align: left;
+}
+th {
+    background-color: #f2f2f2;
+}
+.lamp {
+    width: 15px; /* Ajustar el tamaño de la lámpara */
+    height: 15px; /* Ajustar el tamaño de la lámpara */
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px; /* Reducir el margen derecho */
+}
+.ok {
+    background-color: green;
+}
+.fail {
+    background-color: red;
+}
+#statusTable {
+    display: table; /* Mostrar la tabla siempre */
+}

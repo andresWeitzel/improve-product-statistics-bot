@@ -1,79 +1,49 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index.css" />
     <title>Historial de Productos</title>
-    <style>
-        table {
-            width: 80%; /* Cambiar el ancho a un porcentaje más pequeño */
-            max-width: 600px; /* O establecer un ancho máximo */
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 14px; /* Ajustar el tamaño de la fuente */
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 4px; /* Reducir el padding */
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .lamp {
-            width: 15px; /* Ajustar el tamaño de la lámpara */
-            height: 15px; /* Ajustar el tamaño de la lámpara */
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px; /* Reducir el margen derecho */
-        }
-        .ok {
-            background-color: green;
-        }
-        .fail {
-            background-color: red;
-        }
-        #statusTable {
-            display: table; /* Mostrar la tabla siempre */
-        }
-    </style>
-</head>
-<body>
+  </head>
+  <body>
     <h3>Historial de Visitas a Productos (ML)</h3>
     <table id="statusTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Estado</th>
-                <th>Producto</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody id="statusContainer"></tbody>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Estado</th>
+          <th>Producto</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="statusContainer"></tbody>
     </table>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
-        const statusContainer = document.getElementById("statusContainer");
-        let productCount = 0;
+      const socket = io();
+      const statusContainer = document.getElementById("statusContainer");
+      let productCount = 0;
 
-        socket.on("update", ({ id, status, product, url, datetime }) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
+      socket.on("update", ({ id, status, product, url, datetime }) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
                 <td>${id}</td>
-                <td><div class="lamp ${status === "ok" ? "ok" : "fail"}"></div></td>
+                <td><div class="lamp ${
+                  status === "ok" ? "ok" : "fail"
+                }"></div></td>
                 <td><a href="${url}" target="_blank">${product}</a></td>
                 <td>${datetime}</td>
             `;
-            statusContainer.appendChild(row); 
-            productCount++;
+        statusContainer.appendChild(row);
+        productCount++;
 
-            if (productCount >= 15) {
-                productCount = 0; 
-                location.reload(); 
-            }
-        });
+        if (productCount >= 15) {
+          productCount = 0;
+          location.reload();
+        }
+      });
     </script>
-</body>
+  </body>
 </html>
