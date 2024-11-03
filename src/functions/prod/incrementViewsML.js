@@ -1,5 +1,4 @@
-const puppeteer = require("puppeteer");
-// const { exec } = require('child_process');
+const puppeteer = require('puppeteer-core');
 const { urlsML } = require("../../const/web");
 const {
   getNameFromUrlML,
