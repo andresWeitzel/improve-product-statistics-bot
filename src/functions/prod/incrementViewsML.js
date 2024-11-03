@@ -10,7 +10,7 @@ const { emitStatus } = require("../../utils/socket");
 let currentIndex = 0;
 let visitCounter = 0;
 
-async function incrementViewsML(io) {
+export const incrementViewsML = async (io) => {
   if (currentIndex >= urlsML.length) {
     currentIndex = 0;
     visitCounter++;
@@ -25,8 +25,7 @@ async function incrementViewsML(io) {
     //process.env.CHROME_BIN ||
     //"/opt/render/project/.cache/ms-playwright/chromium-*/chromium" ||
     //"/opt/render/project/src/node_modules/puppeteer-core/lib/cjs/puppeteer/node/BrowserLauncher" ||
-    "/usr/bin/chromium" ||
-    "/usr/bin/google-chrome"; // Cambia esto si es necesario
+    "/usr/bin/chromium" || "/usr/bin/google-chrome"; // Cambia esto si es necesario
 
   console.log(`Usando ejecutable de Chrome en: ${executablePath}`);
 
@@ -68,6 +67,4 @@ async function incrementViewsML(io) {
     currentIndex++;
     setTimeout(() => incrementViewsML(io), 2000); // Llamada recursiva con retardo
   }
-}
-
-module.exports = { incrementViewsML };
+};
