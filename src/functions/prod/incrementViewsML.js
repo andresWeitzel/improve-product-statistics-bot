@@ -1,12 +1,12 @@
 const puppeteer = require("puppeteer-core");
 const { exec } = require('child_process');
-const { urlsML } = require("../const/web");
+const { urlsML } = require("../../const/web");
 const {
   getNameFromUrlML,
   getRandomUserAgent,
-} = require("../utils/conversions");
-const { logStatus } = require("../utils/logging");
-const { emitStatus } = require("../utils/socket");
+} = require("../../utils/conversions");
+const { logStatus } = require("../../utils/logging");
+const { emitStatus } = require("../../utils/socket");
 
 let currentIndex = 0;
 let visitCounter = 0;
