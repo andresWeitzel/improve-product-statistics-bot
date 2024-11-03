@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 import { urlsML } from "../../const/web.js";
 import {
   getNameFromUrlML,
