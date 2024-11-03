@@ -16,5 +16,5 @@ incrementViewsML(io);
 // Iniciar el servidor en el puerto especificado por Render
 const PORT = process.env.PORT || 9008; // 9008 es el puerto local por defecto
 server.listen(PORT, () => {
-  console.log(`Servidor web en http://localhost:${PORT}`);
+  console.log(`Servidor web en puerto ${PORT}`);
 });
