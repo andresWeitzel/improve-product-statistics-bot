@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer-core");
+const { exec } = require('child_process');
 const { urlsML } = require("../const/web");
 const {
   getNameFromUrlML,
@@ -11,8 +12,28 @@ let currentIndex = 0;
 let visitCounter = 0;
 
 async function incrementViewsML(io) {
-    // Configurar el caché de Puppeteer
-    process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer';
+  // Verificar la ruta de Google Chrome
+  exec('which google-chrome', async (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error ejecutando Google Chrome: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.error(`Error: ${stderr}`);
+      return;
+    }
+    
+    const chromePath = stdout.trim(); // Obtener la ruta de Google Chrome
+    console.log(`Ruta de Google Chrome: ${chromePath}`);
+
+    // Iniciar el proceso de visitas
+    await launchPuppeteer(io, chromePath);
+  });
+}
+
+async function launchPuppeteer(io, chromePath) {
+  // Configurar el caché de Puppeteer
+  process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer';
 
   if (currentIndex >= urlsML.length) {
     currentIndex = 0;
@@ -24,39 +45,24 @@ async function incrementViewsML(io) {
 
   const nameProduct = await getNameFromUrlML(url);
 
-  // El modo new en 'headless' es para que se abra el navegador en segundo plano
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: '/usr/bin/google-chrome',
+    executablePath: chromePath, // Usa la ruta verificada
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
       "--disable-accelerated-2d-canvas",
       "--disable-gpu",
-      "--no-first-run",
-      "--no-zygote",
-      "--single-process",
-      "--disable-extensions",
+      "--window-size=1920,1080"
     ],
   });
+  
   const page = await browser.newPage();
-
-    // Desactivar imágenes para ahorrar ancho de banda
-    await page.setRequestInterception(true);
-    page.on("request", (request) => {
-      if (["image", "stylesheet", "font"].includes(request.resourceType())) {
-        request.abort();
-      } else {
-        request.continue();
-      }
-    });
-
   await page.setUserAgent(getRandomUserAgent());
 
   try {
     await page.goto(url, { timeout: 0 });
-
     logStatus(currentIndex + 1, "abierta", nameProduct);
 
     // Notificar al cliente sobre el estado "ok"
@@ -65,17 +71,13 @@ async function incrementViewsML(io) {
     logStatus(currentIndex + 1, "fallida", nameProduct, error);
 
     // Notificar al cliente sobre el estado "fail"
-    emitStatus(io, currentIndex + 1, "fail", nameProduct, url);
+    await emitStatus(io, currentIndex + 1, "fail", nameProduct, url);
   } finally {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await browser.close();
-
     logStatus(currentIndex + 1, "cerrada", nameProduct);
-
-    console.log(
-      "----------------------------------------------------------------"
-    );
+    console.log("----------------------------------------------------------------");
     currentIndex++;
     setTimeout(() => incrementViewsML(io), 2000); // Llamada recursiva con retardo
   }

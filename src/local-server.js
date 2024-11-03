@@ -1,7 +1,7 @@
 const express = require("express");
 const http = require("http");
 const socketIO = require("socket.io");
-const { incrementViewsML } = require("./functions/incrementViewsML");
+const { incrementViewsML } = require("./functions/local/incrementViewsML");
 
 const app = express();
 const server = http.createServer(app);
