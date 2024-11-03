@@ -11,7 +11,7 @@ const io = socketIO(server);
 app.use(express.static("public"));
 
 // Iniciar la función de visitas y pasar el objeto io
-incrementViewsML(io).catch(console.error);
+await incrementViewsML(io).catch(console.error);
 
 // Iniciar el servidor en el puerto especificado por Render
 const PORT = process.env.PORT || 9008; // 9008 es el puerto local por defecto
