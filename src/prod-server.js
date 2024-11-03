@@ -27,4 +27,4 @@ const startServer = async () => {
 };
 
 // Llamar a la función para iniciar el servidor
-startServer();
+await startServer();

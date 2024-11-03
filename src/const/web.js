@@ -87,7 +87,6 @@ export const urlsML = [
   //========MERCADOLIBRE================
   // Deportes
   "https://articulo.mercadolibre.com.ar/MLA-1446036033-raqueta-de-tenis-prince-quantum-powerline-liquidacion-_JM",
-  //"https://articulo.mercadolibre.com.ar/MLA-1451624863-escudos-paos-tibiales-markick-para-boxeo-kick-boxing-mma-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1931372874-botines-de-futbol-adidas-nro-415-liquidacion-_JM",
   // Antiguedades-coleccion
   "https://articulo.mercadolibre.com.ar/MLA-1446952039-antigua-brujula-militar-suiza-plan-ltd-neuchatel-_JM",
