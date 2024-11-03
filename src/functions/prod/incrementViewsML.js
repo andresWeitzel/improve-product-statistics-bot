@@ -1,4 +1,4 @@
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
 const { urlsML } = require("../../const/web");
 const {
   getNameFromUrlML,
@@ -21,14 +21,18 @@ async function incrementViewsML(io) {
 
   const nameProduct = await getNameFromUrlML(url);
 
+  const executablePath =
+    process.env.CHROME_BIN ||
+    "/opt/render/project/.cache/ms-playwright/chromium-*/chromium" ||
+    "/opt/render/project/src/node_modules/puppeteer-core/lib/cjs/puppeteer/node/BrowserLauncher" ||
+    "/usr/bin/chromium" ||
+    "/usr/bin/google-chrome"; // Cambia esto si es necesario
+    
+  console.log(`Usando ejecutable de Chrome en: ${executablePath}`);
+
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath:
-      process.env.CHROME_BIN ||
-      "/opt/render/project/.cache/ms-playwright/chromium-*/chromium" ||
-      "/opt/render/project/src/node_modules/puppeteer-core/lib/cjs/puppeteer/node/BrowserLauncher" ||
-      "/usr/bin/chromium" ||
-      "/usr/bin/google-chrome",
+    executablePath: executablePath,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
