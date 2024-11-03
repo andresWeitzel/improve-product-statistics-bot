@@ -11,6 +11,9 @@ let currentIndex = 0;
 let visitCounter = 0;
 
 async function incrementViewsML(io) {
+    // Configurar el caché de Puppeteer
+    process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer';
+
   if (currentIndex >= urlsML.length) {
     currentIndex = 0;
     visitCounter++;

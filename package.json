@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start":"node src/server",
+    "postinstall": "npm install puppeteer",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
