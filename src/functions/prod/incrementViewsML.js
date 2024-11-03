@@ -13,8 +13,6 @@ let visitCounter = 0;
 
 async function incrementViewsML(io) {
 
-  // Configurar el caché de Puppeteer
-  process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer';
 
   if (currentIndex >= urlsML.length) {
     currentIndex = 0;
@@ -28,7 +26,7 @@ async function incrementViewsML(io) {
 
   const browser = await puppeteer.launch({
     headless: true,
-    // executablePath: chromePath, // Usa la ruta verificada
+    executablePath: process.env.CHROME_BIN || undefined,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
