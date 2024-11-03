@@ -19,7 +19,7 @@ export const incrementViewsML = async (io) => {
 
   const url = urlsML[currentIndex];
 
-  const executablePath = process.env.CHROME_BIN || '/usr/bin/chromium' || '/usr/bin/google-chrome';
+  const executablePath = process.env.CHROME_BIN
 
 
   console.log(`Usando ejecutable de Chrome en: ${executablePath}`);
