@@ -27,6 +27,7 @@ async function incrementViewsML(io) {
   // El modo new en 'headless' es para que se abra el navegador en segundo plano
   const browser = await puppeteer.launch({
     headless: true,
+    executablePath: '/usr/bin/google-chrome',
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
