@@ -23,10 +23,30 @@ async function incrementViewsML(io) {
 
   // El modo new en 'headless' es para que se abra el navegador en segundo plano
   const browser = await puppeteer.launch({
-    headless: "new",
-    args: ["--window-size=1920,1080"],
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--disable-gpu",
+      "--no-first-run",
+      "--no-zygote",
+      "--single-process",
+      "--disable-extensions",
+    ],
   });
   const page = await browser.newPage();
+
+    // Desactivar imágenes para ahorrar ancho de banda
+    await page.setRequestInterception(true);
+    page.on("request", (request) => {
+      if (["image", "stylesheet", "font"].includes(request.resourceType())) {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
 
   await page.setUserAgent(getRandomUserAgent());
 
