@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "local": "node src/local-server",
     "prod": "npm run postinstall && node src/prod-server",
