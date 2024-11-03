@@ -23,11 +23,11 @@ async function incrementViewsML(io) {
 
   const executablePath =
     process.env.CHROME_BIN ||
-    "/opt/render/project/.cache/ms-playwright/chromium-*/chromium" ||
+    //"/opt/render/project/.cache/ms-playwright/chromium-*/chromium" ||
     "/opt/render/project/src/node_modules/puppeteer-core/lib/cjs/puppeteer/node/BrowserLauncher" ||
     "/usr/bin/chromium" ||
     "/usr/bin/google-chrome"; // Cambia esto si es necesario
-    
+
   console.log(`Usando ejecutable de Chrome en: ${executablePath}`);
 
   const browser = await puppeteer.launch({
