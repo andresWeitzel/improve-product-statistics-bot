@@ -1,5 +1,5 @@
-const puppeteer = require("puppeteer-core");
-const { exec } = require('child_process');
+const puppeteer = require("puppeteer");
+// const { exec } = require('child_process');
 const { urlsML } = require("../../const/web");
 const {
   getNameFromUrlML,
@@ -12,26 +12,7 @@ let currentIndex = 0;
 let visitCounter = 0;
 
 async function incrementViewsML(io) {
-  // Verificar la ruta de Google Chrome
-  exec('which google-chrome', async (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error ejecutando Google Chrome: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.error(`Error: ${stderr}`);
-      return;
-    }
-    
-    const chromePath = stdout.trim(); // Obtener la ruta de Google Chrome
-    console.log(`Ruta de Google Chrome: ${chromePath}`);
 
-    // Iniciar el proceso de visitas
-    await launchPuppeteer(io, chromePath);
-  });
-}
-
-async function launchPuppeteer(io, chromePath) {
   // Configurar el caché de Puppeteer
   process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer';
 
@@ -47,7 +28,7 @@ async function launchPuppeteer(io, chromePath) {
 
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: chromePath, // Usa la ruta verificada
+    // executablePath: chromePath, // Usa la ruta verificada
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
