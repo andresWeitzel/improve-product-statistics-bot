@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "local": "node src/local-server",
-    "prod": "node src/prod-server",
-    "postinstall": "npm install puppeteer",
+    "prod": "npm run postinstall && node src/prod-server",
+    "postinstall": "npm install puppeteer && npx puppeteer install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
