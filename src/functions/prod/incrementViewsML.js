@@ -22,7 +22,7 @@ async function incrementViewsML(io) {
   const nameProduct = await getNameFromUrlML(url);
 
   const executablePath =
-    process.env.CHROME_BIN ||
+    //process.env.CHROME_BIN ||
     //"/opt/render/project/.cache/ms-playwright/chromium-*/chromium" ||
     "/opt/render/project/src/node_modules/puppeteer-core/lib/cjs/puppeteer/node/BrowserLauncher" ||
     "/usr/bin/chromium" ||
