@@ -1,11 +1,11 @@
-const express = require("express");
-const http = require("http");
-const socketIO = require("socket.io");
-const { incrementViewsML } = require("./functions/local/incrementViewsML");
+import express from "express";
+import http from "http";
+import { Server as SocketIO } from "socket.io"; // Importa como Server para evitar conflictos
+import { incrementViewsML } from "./functions/local/incrementViewsML.js";
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+const io = new SocketIO(server);
 
 app.use(express.static("public"));
 
@@ -13,7 +13,7 @@ app.use(express.static("public"));
 incrementViewsML(io);
 
 // Iniciar el servidor
-const PORT=9008
+const PORT = 9008;
 server.listen(PORT, () => {
   console.log("Servidor web en http://localhost:9008");
 });

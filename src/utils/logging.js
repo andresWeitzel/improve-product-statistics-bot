@@ -1,4 +1,5 @@
-const { updateDateTime } = require("./dateTime");
+// Importar la función updateDateTime usando import en módulos ES
+import { updateDateTime } from "./dateTime.js";
 
 function logStatus(id, action, productName, error) {
   console.log(
@@ -10,4 +11,5 @@ function logStatus(id, action, productName, error) {
   }
 }
 
-module.exports = { logStatus };
+// Exportar la función usando sintaxis de módulos ES
+export { logStatus };

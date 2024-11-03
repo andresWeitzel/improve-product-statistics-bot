@@ -15,4 +15,5 @@ function updateDateTime() {
   return `${day}, ${time}`;
 }
 
-module.exports = { updateDateTime };
+// Exportar la función usando sintaxis de módulos ES
+export { updateDateTime };

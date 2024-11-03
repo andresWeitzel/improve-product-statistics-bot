@@ -1,11 +1,11 @@
-const puppeteer = require("puppeteer");
-const { urlsML } = require("../../const/web");
-const {
+import puppeteer from "puppeteer";
+import { urlsML } from "../../const/web.js";
+import {
   getNameFromUrlML,
   getRandomUserAgent,
-} = require("../../utils/conversions");
-const { logStatus } = require("../../utils/logging");
-const { emitStatus } = require("../../utils/socket");
+} from "../../utils/conversions.js";
+import { logStatus } from "../../utils/logging.js";
+import { emitStatus } from "../../utils/socket.js";
 
 let currentIndex = 0;
 let visitCounter = 0;
@@ -38,15 +38,15 @@ async function incrementViewsML(io) {
   });
   const page = await browser.newPage();
 
-    // Desactivar imágenes para ahorrar ancho de banda
-    await page.setRequestInterception(true);
-    page.on("request", (request) => {
-      if (["image", "stylesheet", "font"].includes(request.resourceType())) {
-        request.abort();
-      } else {
-        request.continue();
-      }
-    });
+  // Desactivar imágenes para ahorrar ancho de banda
+  await page.setRequestInterception(true);
+  page.on("request", (request) => {
+    if (["image", "stylesheet", "font"].includes(request.resourceType())) {
+      request.abort();
+    } else {
+      request.continue();
+    }
+  });
 
   await page.setUserAgent(getRandomUserAgent());
 
@@ -77,4 +77,5 @@ async function incrementViewsML(io) {
   }
 }
 
-module.exports = { incrementViewsML };
+// Exportar la función usando sintaxis de módulos ES
+export { incrementViewsML };

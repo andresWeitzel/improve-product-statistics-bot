@@ -1,4 +1,5 @@
-const { updateDateTime } = require("./dateTime");
+// Importar la función updateDateTime usando ES Modules
+import { updateDateTime } from "./dateTime.js";
 
 async function emitStatus(io, id, status, product, url) {
   io.emit("update", {
@@ -10,4 +11,5 @@ async function emitStatus(io, id, status, product, url) {
   });
 }
 
-module.exports = { emitStatus };
+// Exportar la función usando sintaxis de módulos ES
+export { emitStatus };

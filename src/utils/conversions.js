@@ -1,15 +1,16 @@
-const { userAgents } = require("../const/web");
+// Importing userAgents using an ES module import
+import { userAgents } from "../const/web.js";
 
 function getNameFromUrlML(url) {
   const urlSplit = url.split("/").pop();
 
-  // Elimina los primeros 15 caracteres
+  // Remove the first 15 characters
   let firstFormat = urlSplit.slice(15);
 
-  // Elimina los últimos 4 caracteres y guiones
+  // Remove the last 4 characters and replace dashes with spaces
   let lastFormat = firstFormat.slice(0, -4).replace(/-/g, " ");
 
-  // Limita la cantidad de caracteres y agrega "..." si es necesario
+  // Limit the number of characters and add "..." if needed
   let limitedFormat = lastFormat.slice(0, 50);
   if (lastFormat.length > 50) {
     limitedFormat += "...";
@@ -22,4 +23,5 @@ function getRandomUserAgent() {
   return userAgents[Math.floor(Math.random() * userAgents.length)];
 }
 
-module.exports = { getNameFromUrlML, getRandomUserAgent };
+// Exporting functions in ES module syntax
+export { getNameFromUrlML, getRandomUserAgent };

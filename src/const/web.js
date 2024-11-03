@@ -1,4 +1,4 @@
-const urlsML = [
+export const urlsML = [
   //======FACEBOOK=========
   //TV lg
   "https://www.facebook.com/marketplace/item/1621665825425193/",
@@ -80,10 +80,6 @@ const urlsML = [
   "https://www.facebook.com/marketplace/item/1202519147619127/",
   //Libro Teoría De Control Para Informáticos - Fusario Crotti (Original-Físico). LIQUIDACIÓN
   "https://www.facebook.com/marketplace/item/538783181830410/",
-  //Raquetas de Tenis para entrenamiento. LIQUIDACIÓN
-  //"https://www.facebook.com/marketplace/item/474743948597278/",
-  //Raqueta de Tenis Sufix Nano Energy. LIQUIDACIÓN
-  //"https://www.facebook.com/marketplace/item/1423682634967378/",
   //Raqueta de Tenis Prince Quantum powerline. LIQUIDACIÓN
   "https://www.facebook.com/marketplace/item/510028034810255/",
   //Oso gigante Phi Phi Toys
@@ -91,8 +87,6 @@ const urlsML = [
   //========MERCADOLIBRE================
   // Deportes
   "https://articulo.mercadolibre.com.ar/MLA-1446036033-raqueta-de-tenis-prince-quantum-powerline-liquidacion-_JM",
-  //"https://articulo.mercadolibre.com.ar/MLA-1446547373-raquetas-de-tenis-para-entrenamiento-liquidacion-_JM",
-  //"https://articulo.mercadolibre.com.ar/MLA-1897421802-raqueta-de-tenis-sufix-nano-energy-liquidacion-_JM",
   //"https://articulo.mercadolibre.com.ar/MLA-1451624863-escudos-paos-tibiales-markick-para-boxeo-kick-boxing-mma-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1931372874-botines-de-futbol-adidas-nro-415-liquidacion-_JM",
   // Antiguedades-coleccion
@@ -124,7 +118,7 @@ const urlsML = [
   "https://articulo.mercadolibre.com.ar/MLA-1450484881-oso-gigante-phi-phi-toys-_JM",
 ];
 
-const userAgents = [
+export const userAgents = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
   "Mozilla/5.0 (Linux; Android 10; Pixel 3 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Mobile Safari/537.36",
@@ -132,5 +126,3 @@ const userAgents = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
   "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
 ];
-
-module.exports = { urlsML, userAgents };

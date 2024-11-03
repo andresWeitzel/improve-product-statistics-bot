@@ -1,11 +1,11 @@
-const puppeteer = require("puppeteer-core");
-const { urlsML } = require("../../const/web");
-const {
+import puppeteer from "puppeteer-core";
+import { urlsML } from "../../const/web.js";
+import {
   getNameFromUrlML,
   getRandomUserAgent,
-} = require("../../utils/conversions");
-const { logStatus } = require("../../utils/logging");
-const { emitStatus } = require("../../utils/socket");
+} from "../../utils/conversions.js";
+import { logStatus } from "../../utils/logging.js";
+import { emitStatus } from "../../utils/socket.js";
 
 let currentIndex = 0;
 let visitCounter = 0;
@@ -18,8 +18,6 @@ export const incrementViewsML = async (io) => {
   }
 
   const url = urlsML[currentIndex];
-
-  const nameProduct = await getNameFromUrlML(url);
 
   const executablePath =
     //process.env.CHROME_BIN ||
@@ -47,20 +45,20 @@ export const incrementViewsML = async (io) => {
 
   try {
     await page.goto(url, { timeout: 0 });
-    logStatus(currentIndex + 1, "abierta", nameProduct);
+    logStatus(currentIndex + 1, "abierta", await getNameFromUrlML(url));
 
     // Notificar al cliente sobre el estado "ok"
-    await emitStatus(io, currentIndex + 1, "ok", nameProduct, url);
+    await emitStatus(io, currentIndex + 1, "ok", await getNameFromUrlML(url), url);
   } catch (error) {
-    logStatus(currentIndex + 1, "fallida", nameProduct, error);
+    logStatus(currentIndex + 1, "fallida", await getNameFromUrlML(url), error);
 
     // Notificar al cliente sobre el estado "fail"
-    await emitStatus(io, currentIndex + 1, "fail", nameProduct, url);
+    await emitStatus(io, currentIndex + 1, "fail", await getNameFromUrlML(url), url);
   } finally {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await browser.close();
-    logStatus(currentIndex + 1, "cerrada", nameProduct);
+    logStatus(currentIndex + 1, "cerrada", await getNameFromUrlML(url));
     console.log(
       "----------------------------------------------------------------"
     );
