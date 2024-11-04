@@ -9,32 +9,33 @@ import { emitStatus } from "../../utils/socket.js";
 
 let currentIndex = 0;
 let visitCounter = 0;
-
-// Tiempo máximo permitido para cada ciclo de visita en ms
-const CYCLE_TIMEOUT = 20000;
+const BROWSER_FULL_FLOW_TIMEOUT = 1000;
+const BROWSER_OPEN_TIMEOUT = 30000;
 
 async function incrementViewsML(io) {
-  if (currentIndex >= urlsML.length) {
-    currentIndex = 0;
-    visitCounter++;
-    console.log(`Reiniciando. Visita número: ${visitCounter}`);
+  while (true) {
+    if (currentIndex >= urlsML.length) {
+      currentIndex = 0;
+      visitCounter++;
+      console.log(`Reiniciando. Visita número: ${visitCounter}`);
+    }
+
+    const url = urlsML[currentIndex];
+    await visitUrl(io, url);
+    currentIndex++;
+
+    // Tiempo de espera entre visitas
+    await new Promise((resolve) =>
+      setTimeout(resolve, BROWSER_FULL_FLOW_TIMEOUT)
+    );
   }
+}
 
-  const url = urlsML[currentIndex];
+async function visitUrl(io, url) {
   const nameProduct = await getNameFromUrlML(url);
-
   let browser;
-  let timeoutHandle;
 
   try {
-    // Inicia un watchdog de tiempo para el ciclo completo
-    const cyclePromise = new Promise((_, reject) => {
-      timeoutHandle = setTimeout(() => {
-        reject(new Error("Ciclo excedió el tiempo límite de 20 segundos"));
-      }, CYCLE_TIMEOUT);
-    });
-
-    // Ejecuta el ciclo de apertura del navegador, carga y cierre de página
     browser = await puppeteer.launch({
       headless: true,
       args: [
@@ -49,9 +50,10 @@ async function incrementViewsML(io) {
         "--disable-extensions",
       ],
     });
+
     const page = await browser.newPage();
 
-    // Desactiva imágenes para ahorrar ancho de banda
+    // Desactivar imágenes para ahorrar ancho de banda
     await page.setRequestInterception(true);
     page.on("request", (request) => {
       if (["image", "stylesheet", "font"].includes(request.resourceType())) {
@@ -63,32 +65,32 @@ async function incrementViewsML(io) {
 
     await page.setUserAgent(getRandomUserAgent());
 
-    // Watchdog (cyclePromise): Usa Promise.race con un timeout de 20 segundos para todo el ciclo. Si el ciclo completo toma más tiempo, se cancela automáticamente.
-    await Promise.race([page.goto(url, { timeout: 0 }), cyclePromise]);
+    // Establecer un timeout para la navegación (espera del navegador si falla)
+    const response = await page.goto(url, {
+      waitUntil: "networkidle2",
+      timeout: BROWSER_OPEN_TIMEOUT,
+    });
+
+    // Verificar si la respuesta es válida
+    if (!response || !response.ok()) {
+      throw new Error(`Error al cargar la URL: ${url}`);
+    }
 
     logStatus(currentIndex + 1, "abierta", nameProduct);
-
-    // Notificar al cliente sobre el estado "ok"
     await emitStatus(io, currentIndex + 1, "ok", nameProduct, url);
-
   } catch (error) {
-    logStatus(currentIndex + 1, "fallida", nameProduct, error.message);
-
-    // Notificar al cliente sobre el estado "fail"
-    emitStatus(io, currentIndex + 1, "fail", nameProduct, url);
-
-    console.log("Error detectado. Reiniciando ciclo...");
+    console.error(`Error visitando la URL ${url}:`, error);
+    logStatus(currentIndex + 1, "fallida", nameProduct, error);
+    await emitStatus(io, currentIndex + 1, "fail", nameProduct, url);
   } finally {
-    clearTimeout(timeoutHandle); // Cancela el watchdog si el ciclo se completa
-    if (browser) await browser.close();
+    if (browser) {
+      await browser.close();
+      logStatus(currentIndex + 1, "cerrada", nameProduct);
+    }
 
-    logStatus(currentIndex + 1, "cerrada", nameProduct);
-
-    console.log("----------------------------------------------------------------");
-
-    currentIndex++;
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Espera de 1 segundo antes de reiniciar el ciclo
-    await incrementViewsML(io); // Llamada recursiva para continuar el proceso
+    console.log(
+      "----------------------------------------------------------------"
+    );
   }
 }
 
