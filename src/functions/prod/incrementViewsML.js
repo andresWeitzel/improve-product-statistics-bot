@@ -11,6 +11,7 @@ let currentIndex = 0;
 let visitCounter = 0;
 
 export const incrementViewsML = async (io) => {
+  //QUE NO SE PARE CUANDO LLEGUE ACA...QUE SIGA DE FORMA INDEFINIDA
   if (currentIndex >= urlsML.length) {
     currentIndex = 0;
     visitCounter++;
