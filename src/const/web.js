@@ -7,6 +7,8 @@ export const urlsML = [
   "https://www.facebook.com/marketplace/item/1278926506487660/",
   // Biblioteca Estantería Mueble
   "https://www.facebook.com/marketplace/item/1239493113974323/",
+  //Mesa de luz blanca
+  "https://www.facebook.com/marketplace/item/1763207107552223/",
     // ---- ROPA -----
   //Pantalon De Entrenamiento Nike
   "https://www.facebook.com/marketplace/item/596744276045862/",
@@ -30,6 +32,8 @@ export const urlsML = [
   "https://www.facebook.com/marketplace/item/614897807667120/",
   //Funda Casco Militar
   "https://www.facebook.com/marketplace/item/1523389154982104/",
+  //Pods
+  "https://www.facebook.com/marketplace/item/531173720076040/",
   // ---- ANTIGUEDADES -----
   //Vaso Chop De Cerveza Isenbeck
   "https://www.facebook.com/marketplace/item/1065221695099345/",
@@ -38,6 +42,8 @@ export const urlsML = [
   // ---------- ELECTRONICA ----------
   //TV lg
   "https://www.facebook.com/marketplace/item/1621665825425193/",
+  //Camara sensor de humo
+  "https://www.facebook.com/marketplace/item/3954909631422152",
   //Teclado Noganet Mini Usb Pc.
   "https://www.facebook.com/marketplace/item/1609382393037932/",
   //Switch Multiplicador De Puertos Hdmi 4k
@@ -116,6 +122,7 @@ export const urlsML = [
   //Hogar
   "https://articulo.mercadolibre.com.ar/MLA-1969047380-exahome-calefactor-c1009-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1464603961-biblioteca-estanteria-mueble-de-madera-grande-liquidacion-_JM",
+  "https://articulo.mercadolibre.com.ar/MLA-1973148588-mesa-de-luz-blanca-2-cajones-y-1-puerta-liquidacion-_JM",
   // Deportes
   "https://articulo.mercadolibre.com.ar/MLA-1446036033-raqueta-de-tenis-prince-quantum-powerline-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1931372874-botines-de-futbol-adidas-nro-415-liquidacion-_JM",
@@ -136,7 +143,6 @@ export const urlsML = [
   "https://articulo.mercadolibre.com.ar/MLA-1975569938-chaleco-tactico-de-paintball-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1973680454-funda-casco-militar-reversible-con-ghillie-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1976413104-marcadora-de-paintball-tippmann-a-5-stealth-customizada-_JM",
-  // Ropa
   "https://articulo.mercadolibre.com.ar/MLA-1464985993-correaje-militar-de-ejercito-liquidacion-_JM",
   // Antiguedades-coleccion
   "https://articulo.mercadolibre.com.ar/MLA-1456215693-vaso-chop-de-cerveza-isenbeck-importado-de-coleccion-1l-_JM",
