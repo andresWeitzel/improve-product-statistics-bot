@@ -10,7 +10,7 @@ import { emitStatus } from "../../utils/socket.js";
 let currentIndex = 0;
 let visitCounter = 0;
 const BROWSER_FULL_FLOW_TIMEOUT = 1000;
-const BROWSER_OPEN_TIMEOUT = 30000;
+const BROWSER_OPEN_TIMEOUT = 60000;
 const VISIT_TIMEOUT = 60000; // Timeout de 60 segundos para visitar una URL
 
 async function incrementViewsML(io) {
@@ -70,7 +70,7 @@ async function visitUrl(io, url) {
 
       // Establecer un timeout para la navegación (espera del navegador si falla)
       const response = await page.goto(url, {
-        waitUntil: "networkidle2",
+        waitUntil: "domcontentloaded",
         timeout: BROWSER_OPEN_TIMEOUT,
       });
 
