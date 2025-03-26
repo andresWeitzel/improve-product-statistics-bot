@@ -42,8 +42,6 @@ export const urlsML = [
   "https://www.facebook.com/marketplace/item/1308995027024547/",
   //Funda Casco Militar
   "https://www.facebook.com/marketplace/item/610161605161979/",
-  //Correaje militar
-  "https://www.facebook.com/marketplace/item/662726699612393/",
   // ---- ANTIGUEDADES -----
   //Vaso Chop De Cerveza Isenbeck
   "https://www.facebook.com/marketplace/item/615427021334365/",
@@ -153,7 +151,6 @@ export const urlsML = [
   "https://articulo.mercadolibre.com.ar/MLA-1975569938-chaleco-tactico-de-paintball-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1973680454-funda-casco-militar-reversible-con-ghillie-liquidacion-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1976413104-marcadora-de-paintball-tippmann-a-5-stealth-customizada-_JM",
-  "https://articulo.mercadolibre.com.ar/MLA-1464985993-correaje-militar-de-ejercito-liquidacion-_JM",
   // Antiguedades-coleccion
   "https://articulo.mercadolibre.com.ar/MLA-1456215693-vaso-chop-de-cerveza-isenbeck-importado-de-coleccion-1l-_JM",
   "https://articulo.mercadolibre.com.ar/MLA-1969047150-cuadro-de-lancha-de-carrera-lucas-nicolini-60x80-_JM",
