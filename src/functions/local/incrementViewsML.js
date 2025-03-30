@@ -1,7 +1,6 @@
 import puppeteer from "puppeteer";
 import { urlsML } from "../../const/web.js";
 import {
-  getNameFromUrlML,
   getRandomUserAgent,
 } from "../../utils/conversions.js";
 import { logStatus } from "../../utils/logging.js";
@@ -14,15 +13,17 @@ const BROWSER_OPEN_TIMEOUT = 60000;
 const VISIT_TIMEOUT = 60000; // Timeout de 60 segundos para visitar una URL
 
 async function incrementViewsML(io) {
+  const productNames = Object.keys(urlsML); // Obtener las claves del objeto urlsML
   while (true) {
-    if (currentIndex >= urlsML.length) {
+    if (currentIndex >= productNames.length) {
       currentIndex = 0;
       visitCounter++;
       console.log(`Reiniciando. Visita número: ${visitCounter}`);
     }
 
-    const url = urlsML[currentIndex];
-    await visitUrl(io, url);
+    const productName = productNames[currentIndex]; // Obtener el nombre del producto
+    const url = urlsML[productName]; // Obtener la URL asociada a la clave
+    await visitUrl(io, url, productName);
     currentIndex++;
 
     // Tiempo de espera entre visitas
@@ -32,8 +33,7 @@ async function incrementViewsML(io) {
   }
 }
 
-async function visitUrl(io, url) {
-  const nameProduct = await getNameFromUrlML(url);
+async function visitUrl(io, url, productName) {
   let browser;
 
   // Promise que se resolverá cuando la visita haya terminado
@@ -79,25 +79,25 @@ async function visitUrl(io, url) {
         throw new Error(`Error al cargar la URL: ${url}`);
       }
 
-      logStatus(currentIndex + 1, "abierta", nameProduct);
-      await emitStatus(io, currentIndex + 1, "ok", nameProduct, url);
+      logStatus(currentIndex + 1, "abierta", productName);
+      await emitStatus(io, currentIndex + 1, "ok", productName, url);
       resolve(); // Resuelve la promesa si todo va bien
     } catch (error) {
       console.error(`Error visitando la URL ${url}:`, error);
-      logStatus(currentIndex + 1, "fallida", nameProduct, error);
-      await emitStatus(io, currentIndex + 1, "fail", nameProduct, url);
+      logStatus(currentIndex + 1, "fallida", productName, error);
+      await emitStatus(io, currentIndex + 1, "fail", productName, url);
       reject(error); // Rechaza la promesa si ocurre un error
     } finally {
       if (browser) {
         await browser.close();
-        logStatus(currentIndex + 1, "cerrada", nameProduct);
+        logStatus(currentIndex + 1, "cerrada", productName);
       }
       console.log("----------------------------------------------------------------");
     }
   });
 
   // Timeout que rechaza la promesa si se queda colgada
-  const timeoutPromise = new Promise((_, reject) => 
+  const timeoutPromise = new Promise((_, reject) =>
     setTimeout(() => reject(new Error(`Timeout al visitar la URL: ${url}`)), VISIT_TIMEOUT)
   );
 
