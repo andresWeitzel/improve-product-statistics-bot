@@ -63,6 +63,12 @@ export const urlsML = {
     "https://www.facebook.com/marketplace/item/975804534644501/",
   "Adaptador Conversor Usb 2.0 A Vga Hembra Nisuta":
     "https://www.facebook.com/marketplace/item/544849654810813/",
+  "Placa Pci A Usb Encore 4 Puertos Usb Amplía Los Usb.":
+    "https://www.facebook.com/marketplace/item/652657517358966/",
+  "Mini Teclado Genius Luxemate Qwerty":
+    "https://www.facebook.com/marketplace/item/1201595775013916/",
+  "Memoria Ram Notebook Samsung Ddr3 4gb":
+    "https://www.facebook.com/marketplace/item/2437869176550581/",
 
   // Libros
   // "Libro Crímenes para resolver":
@@ -143,8 +149,6 @@ export const urlsML = {
     "https://www.mercadolibre.com.ar/copas-de-cristal-labradas-x4-liquidacion/up/MLAU3083467371",
 
   //Ropa
-  "Pantalón de Entrenamiento Nike Original Liquidación":
-    "https://articulo.mercadolibre.com.ar/MLA-1467929807-pantalon-de-entrenamiento-nike-original-liquidacion-_JM",
   "Pantalón MMA Reforzado Cruge Liquidación":
     "https://articulo.mercadolibre.com.ar/MLA-1467905421-pantalon-mma-reforzado-cruge-liquidacion-_JM",
   "Cinto Monocrom Nato Táctico de Combate Militar":
@@ -203,6 +207,12 @@ export const urlsML = {
     "https://www.mercadolibre.com.ar/adaptador-conversor-usb-20-a-vga-hembra-nisuta/up/MLAU3079429021",
   "Cámara Espía Oculta en Sensor de Humo Full HD CCTV Newvision":
     "https://articulo.mercadolibre.com.ar/MLA-1960650056-camara-espia-oculta-en-sensor-de-humo-full-hd-cctv-newvision-_JM",
+  "Placa Pci A Usb Encore 4 Puertos":
+    "https://www.mercadolibre.com.ar/placa-pci-a-usb-encore-4-puertos-usb-amplia-los-usb-fact-a/up/MLAU3093659021",
+  "Mini Teclado Genius Luxemate Qwerty Español. Ver Detalle":
+    "https://www.mercadolibre.com.ar/teclado-genius-luxemate-qwerty-espanol-ver-detalle/up/MLAU3093691197",
+  "memoria-ram-notebook-samsung-ddr3-4gb":
+    "https://www.mercadolibre.com.ar/memoria-ram-notebook-samsung-ddr3-4gb-liquidacion/up/MLAU3093738545",
 
   //Libros
   "Libro Criptografía Protección de Datos y Aplicaciones":
