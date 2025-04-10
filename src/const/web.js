@@ -14,6 +14,8 @@ export const urlsML = {
     "https://www.facebook.com/marketplace/item/1890553145017328/",
   "Potes Antihumedad":
     "https://www.facebook.com/marketplace/item/2003770576785101/",
+  "Colchón 1 Plaza La Cardeuse":
+    "https://www.facebook.com/marketplace/item/1191093395750788/",
 
   // Ropa
   "Pantalon Mma Reforzado Cruge":
@@ -55,6 +57,10 @@ export const urlsML = {
     "https://www.facebook.com/marketplace/item/9285843118137588/",
 
   // Electrónica
+  "Memoria crucial 8gb":
+    "https://www.facebook.com/marketplace/item/1151261540087663/",
+  "Pack Memoria crucial 8gb":
+    "https://www.facebook.com/marketplace/item/1379093489941424/",
   "Camara en sensor de humo":
     "https://www.facebook.com/marketplace/item/983162697099933/",
   "Switch Multiplicador De Puertos Hdmi 4k":
@@ -147,6 +153,8 @@ export const urlsML = {
     "https://www.mercadolibre.com.ar/potes-antihumedad-liquidacion/up/MLAU3088832628",
   "Copas de Cristal Labradas x4 Liquidación":
     "https://www.mercadolibre.com.ar/copas-de-cristal-labradas-x4-liquidacion/up/MLAU3083467371",
+  "Colchón 1 Plaza La Cardeuse":
+    "https://www.mercadolibre.com.ar/colchon-1-plaza-la-cardeuse-privelle-hotel-90x200-nuevo/up/MLAU3107522502",
 
   //Ropa
   "Pantalón MMA Reforzado Cruge Liquidación":
@@ -197,6 +205,10 @@ export const urlsML = {
     "https://www.mercadolibre.com.ar/copas-de-cristal-labradas-x4-liquidacion/up/MLAU3083467371",
 
   //Electrónica
+  "Memoria crucial 8gb":
+    "https://www.mercadolibre.com.ar/memoria-ram-unidad-ddr4-8gb-crucial-cb8gu2666-sodimm/up/MLAU3113151323",
+  "Pack Memoria crucial 8gb":
+    "https://www.mercadolibre.com.ar/pack-memorias-ram-ddr4-8gb-crucial-cb8gu2666-sodimm/up/MLAU3118574890",
   "Conversor Adaptador Convertidor VGA a HDMI con Audio":
     "https://articulo.mercadolibre.com.ar/MLA-1929869212-conversor-adaptador-convertidor-vga-a-hdmi-con-audio-_JM",
   "Switch Multiplicador de Puertos HDMI 4K de 3 Puertos en 1":
