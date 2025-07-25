@@ -1,4 +1,4 @@
-import { chromium } from "playwright";
+import fetch from "node-fetch";
 import { urlsML } from "../../const/web.js";
 import {
   getNameFromUrlML,
@@ -26,34 +26,30 @@ export const incrementViewsML = async (io) => {
   console.log(`🎯 Visitando: ${productName}`);
   console.log(`🔗 URL: ${url}`);
 
-  // Configuración para Playwright en entornos cloud
-  const browser = await chromium.launch({
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-    ],
-  });
-
-  const context = await browser.newContext({
-    userAgent: getRandomUserAgent()
-  });
-  
-  const page = await context.newPage();
-
   try {
-    console.log(`🌐 Navegando a: ${url}`);
-    await page.goto(url, { 
-      timeout: 30000,
-      waitUntil: 'domcontentloaded'
-    });
-    console.log(`✅ Página cargada exitosamente`);
+    console.log(`🌐 Haciendo request a: ${url}`);
     
-    logStatus(currentIndex + 1, "abierta", productName);
-    await emitStatus(io, currentIndex + 1, "ok", productName, url);
-    console.log(`📡 Datos enviados al frontend`);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': getRandomUserAgent(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+      },
+      timeout: 30000
+    });
+
+    if (response.ok) {
+      console.log(`✅ Request exitoso - Status: ${response.status}`);
+      logStatus(currentIndex + 1, "abierta", productName);
+      await emitStatus(io, currentIndex + 1, "ok", productName, url);
+      console.log(`📡 Datos enviados al frontend`);
+    } else {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
     
   } catch (error) {
     console.error(`❌ Error visitando ${productName}:`, error.message);
@@ -61,10 +57,8 @@ export const incrementViewsML = async (io) => {
     await emitStatus(io, currentIndex + 1, "fail", productName, url);
   } finally {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    await context.close();
-    await browser.close();
     logStatus(currentIndex + 1, "cerrada", productName);
-    console.log(`🔒 Navegador cerrado`);
+    console.log(`🔒 Request completado`);
     console.log("----------------------------------------------------------------");
     currentIndex++;
     setTimeout(() => incrementViewsML(io), 2000);
