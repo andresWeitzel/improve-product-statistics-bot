@@ -26,22 +26,14 @@ export const incrementViewsML = async (io) => {
   console.log(`🎯 Visitando: ${productName}`);
   console.log(`🔗 URL: ${url}`);
 
-  // Configuración específica para entornos cloud sin Chrome
+  // Configuración simple para Chromium en entornos cloud
   const browser = await puppeteer.launch({
     headless: true,
-    product: 'chrome',
-    channel: 'chrome',
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
       "--disable-gpu",
-      "--disable-web-security",
-      "--disable-features=VizDisplayCompositor",
-      "--window-size=1920,1080",
-      "--single-process",
-      "--no-zygote",
     ],
   });
 
