@@ -41,12 +41,6 @@
         connectionStatus.style.color = "red";
       });
 
-      socket.on("connect_error", (error) => {
-        console.error("❌ Error de conexión:", error);
-        connectionStatus.textContent = "❌ Error de conexión: " + error.message;
-        connectionStatus.style.color = "red";
-      });
-
       socket.on("update", ({ id, status, product, url, datetime }) => {
         console.log("📡 Recibido update:", { id, status, product, url, datetime });
         

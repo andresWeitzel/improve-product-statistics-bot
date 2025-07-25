@@ -14,16 +14,11 @@ if (process.env.NODE_ENV === "production") {
 
 const app = express();
 const server = http.createServer(app);
-const io = new SocketIO(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
+const io = new SocketIO(server);
 
 app.use(express.static("public"));
 
-// Agregar ruta de health check
+// Ruta de health check
 app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
@@ -56,11 +51,11 @@ const startServer = async () => {
       console.log(`🌐 URL: https://improve-product-statistics-bot.onrender.com/`);
     });
     
-    // Iniciar el proceso de visitas después de un pequeño delay
+    // Iniciar el proceso de visitas después de un delay
     setTimeout(() => {
       console.log("🔄 Iniciando bot de visitas...");
       runIncrementViewsML();
-    }, 2000);
+    }, 3000);
     
   } catch (error) {
     console.error("❌ Error al iniciar el servidor:", error);
