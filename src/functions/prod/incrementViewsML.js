@@ -20,14 +20,9 @@ export const incrementViewsML = async (io) => {
 
   const url = urlsML[currentIndex];
 
-  const executablePath = process.env.CHROME_BIN
-
-
-  console.log(`Usando ejecutable de Chrome en: ${executablePath}`);
-
+  // Eliminar executablePath, dejar que Puppeteer use su Chromium
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: executablePath,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
