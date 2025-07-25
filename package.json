@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "build": "npx playwright install chromium",
-    "postinstall": "npx playwright install chromium"
+    "build": "npx playwright install",
+    "postinstall": "npx playwright install"
   },
   "author": "",
   "license": "ISC",

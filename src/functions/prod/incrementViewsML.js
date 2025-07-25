@@ -33,13 +33,15 @@ export const incrementViewsML = async (io) => {
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
+      "--disable-gpu",
     ],
   });
 
-  const page = await browser.newPage();
-  await page.setExtraHTTPHeaders({
-    'User-Agent': getRandomUserAgent()
+  const context = await browser.newContext({
+    userAgent: getRandomUserAgent()
   });
+  
+  const page = await context.newPage();
 
   try {
     console.log(`🌐 Navegando a: ${url}`);
@@ -59,6 +61,7 @@ export const incrementViewsML = async (io) => {
     await emitStatus(io, currentIndex + 1, "fail", productName, url);
   } finally {
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    await context.close();
     await browser.close();
     logStatus(currentIndex + 1, "cerrada", productName);
     console.log(`🔒 Navegador cerrado`);
