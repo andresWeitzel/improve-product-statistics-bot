@@ -6,15 +6,13 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "build": "npm run postinstall",
-    "postinstall": "npm install puppeteer",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "echo 'build step'"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.1",
-    "puppeteer": "^23.11.1",
+    "puppeteer": "^20.9.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
   }
