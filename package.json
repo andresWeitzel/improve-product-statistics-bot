@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "prod": "npm run postinstall && node src/prod-server",
+    "build": "npm run postinstall",
     "postinstall": "npm install puppeteer && npx puppeteer install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
