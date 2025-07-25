@@ -11,14 +11,20 @@ let currentIndex = 0;
 let visitCounter = 0;
 
 export const incrementViewsML = async (io) => {
-  //QUE NO SE PARE CUANDO LLEGUE ACA...QUE SIGA DE FORMA INDEFINIDA
-  if (currentIndex >= urlsML.length) {
+  console.log(`📊 Total de URLs: ${Object.keys(urlsML).length}`);
+  
+  if (currentIndex >= Object.keys(urlsML).length) {
     currentIndex = 0;
     visitCounter++;
-    console.log(`Reiniciando. Visita número: ${visitCounter}`);
+    console.log(`🔄 Reiniciando. Visita número: ${visitCounter}`);
   }
 
-  const url = urlsML[currentIndex];
+  const productNames = Object.keys(urlsML);
+  const productName = productNames[currentIndex];
+  const url = urlsML[productName];
+  
+  console.log(`🎯 Visitando: ${productName}`);
+  console.log(`🔗 URL: ${url}`);
 
   // Eliminar executablePath, dejar que Puppeteer use su Chromium
   const browser = await puppeteer.launch({
@@ -37,25 +43,25 @@ export const incrementViewsML = async (io) => {
   await page.setUserAgent(getRandomUserAgent());
 
   try {
-    await page.goto(url, { timeout: 0 });
-    logStatus(currentIndex + 1, "abierta", await getNameFromUrlML(url));
-
-    // Notificar al cliente sobre el estado "ok"
-    await emitStatus(io, currentIndex + 1, "ok", await getNameFromUrlML(url), url);
+    console.log(`🌐 Navegando a: ${url}`);
+    await page.goto(url, { timeout: 30000 });
+    console.log(`✅ Página cargada exitosamente`);
+    
+    logStatus(currentIndex + 1, "abierta", productName);
+    await emitStatus(io, currentIndex + 1, "ok", productName, url);
+    console.log(`📡 Datos enviados al frontend`);
+    
   } catch (error) {
-    logStatus(currentIndex + 1, "fallida", await getNameFromUrlML(url), error);
-
-    // Notificar al cliente sobre el estado "fail"
-    await emitStatus(io, currentIndex + 1, "fail", await getNameFromUrlML(url), url);
+    console.error(`❌ Error visitando ${productName}:`, error.message);
+    logStatus(currentIndex + 1, "fallida", productName, error);
+    await emitStatus(io, currentIndex + 1, "fail", productName, url);
   } finally {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-
     await browser.close();
-    logStatus(currentIndex + 1, "cerrada", await getNameFromUrlML(url));
-    console.log(
-      "----------------------------------------------------------------"
-    );
+    logStatus(currentIndex + 1, "cerrada", productName);
+    console.log(`🔒 Navegador cerrado`);
+    console.log("----------------------------------------------------------------");
     currentIndex++;
-    setTimeout(() => incrementViewsML(io), 2000); // Llamada recursiva con retardo
+    setTimeout(() => incrementViewsML(io), 2000);
   }
 };
