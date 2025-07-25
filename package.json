@@ -2,10 +2,10 @@
   "name": "improve-product-statistics-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "local": "node src/local-server",
+    "start": "node src/server.js",
     "prod": "npm run postinstall && node src/prod-server",
     "postinstall": "npm install puppeteer && npx puppeteer install",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.1",
-    "puppeteer": "^23.6.1",
+    "puppeteer": "^23.11.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
   }

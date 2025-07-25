@@ -3,78 +3,78 @@ export const urlsML = {
   //======FACEBOOK=========
   //=======================
 
-  // Hogar
-  "Exahome Calefactor C1009. Liquidación":
-    "https://www.facebook.com/marketplace/item/632490262849767/",
-  "Velador de mesa":
-    "https://www.facebook.com/marketplace/item/999933775483073/",
-  "Lampara de pie antigua":
-    "https://www.facebook.com/marketplace/item/1321432055582423/",
-  "Cajonera comoda":
-    "https://www.facebook.com/marketplace/item/1890553145017328/",
-  "Potes Antihumedad":
-    "https://www.facebook.com/marketplace/item/2003770576785101/",
-  "Colchón 1 Plaza La Cardeuse":
-    "https://www.facebook.com/marketplace/item/1191093395750788/",
+  // // Hogar
+  // "Exahome Calefactor C1009. Liquidación":
+  //   "https://www.facebook.com/marketplace/item/632490262849767/",
+  // "Velador de mesa":
+  //   "https://www.facebook.com/marketplace/item/999933775483073/",
+  // "Lampara de pie antigua":
+  //   "https://www.facebook.com/marketplace/item/1321432055582423/",
+  // "Cajonera comoda":
+  //   "https://www.facebook.com/marketplace/item/1890553145017328/",
+  // "Potes Antihumedad":
+  //   "https://www.facebook.com/marketplace/item/2003770576785101/",
+  // "Colchón 1 Plaza La Cardeuse":
+  //   "https://www.facebook.com/marketplace/item/1191093395750788/",
 
-  // Ropa
-  "Pantalon Mma Reforzado Cruge":
-    "https://www.facebook.com/marketplace/item/1162167778746028/",
-  "Cinto Militar":
-    "https://www.facebook.com/marketplace/item/2212473219167494/",
+  // // Ropa
+  // "Pantalon Mma Reforzado Cruge":
+  //   "https://www.facebook.com/marketplace/item/1162167778746028/",
+  // "Cinto Militar":
+  //   "https://www.facebook.com/marketplace/item/2212473219167494/",
 
-  // Deportes
-  "Botines futbol 41.5":
-    "https://www.facebook.com/marketplace/item/1759382214606269/",
-  "Botines de futbol 42":
-    "https://www.facebook.com/marketplace/item/1769679033588945/",
-  "Raqueta de Tenis Prince Quantum powerline. LIQUIDACIÓN":
-    "https://www.facebook.com/marketplace/item/1628675058016409/",
-  "Multigimnasio Everlast. Liquidación":
-    "https://www.facebook.com/marketplace/item/665173725948148/",
-  "Flautas pack": "https://www.facebook.com/marketplace/item/655746700150981/",
+  // // Deportes
+  // "Botines futbol 41.5":
+  //   "https://www.facebook.com/marketplace/item/1759382214606269/",
+  // "Botines de futbol 42":
+  //   "https://www.facebook.com/marketplace/item/1769679033588945/",
+  // "Raqueta de Tenis Prince Quantum powerline. LIQUIDACIÓN":
+  //   "https://www.facebook.com/marketplace/item/1628675058016409/",
+  // "Multigimnasio Everlast. Liquidación":
+  //   "https://www.facebook.com/marketplace/item/665173725948148/",
+  // "Flautas pack": "https://www.facebook.com/marketplace/item/655746700150981/",
 
-  // Paintball
-  "Chaleco Táctico porta Pods y Garrafa. Liquidación":
-    "https://www.facebook.com/marketplace/item/1674425640173590/",
-  "Chaleco Táctico De Paintball Grosstactical Con Ghillie.":
-    "https://www.facebook.com/marketplace/item/1329485141436174/",
-  "Máscara De Paintball Extreme Rage. Liquidación":
-    "https://www.facebook.com/marketplace/item/3779415422370229/",
-  "Pods Paintball":
-    "https://www.facebook.com/marketplace/item/1330635684856724/",
-  "Rodilleras Y Coderas Tácticas Paintball Airsoft Militar.":
-    "https://www.facebook.com/marketplace/item/1308995027024547/",
-  "Funda Casco Militar":
-    "https://www.facebook.com/marketplace/item/610161605161979/",
+  // // Paintball
+  // "Chaleco Táctico porta Pods y Garrafa. Liquidación":
+  //   "https://www.facebook.com/marketplace/item/1674425640173590/",
+  // "Chaleco Táctico De Paintball Grosstactical Con Ghillie.":
+  //   "https://www.facebook.com/marketplace/item/1329485141436174/",
+  // "Máscara De Paintball Extreme Rage. Liquidación":
+  //   "https://www.facebook.com/marketplace/item/3779415422370229/",
+  // "Pods Paintball":
+  //   "https://www.facebook.com/marketplace/item/1330635684856724/",
+  // "Rodilleras Y Coderas Tácticas Paintball Airsoft Militar.":
+  //   "https://www.facebook.com/marketplace/item/1308995027024547/",
+  // "Funda Casco Militar":
+  //   "https://www.facebook.com/marketplace/item/610161605161979/",
 
-  // Antigüedades
-  "Vaso Chop De Cerveza Isenbeck":
-    "https://www.facebook.com/marketplace/item/615427021334365/",
-  "Cuadro De Lancha De Carrera Lucas Nicolini (60x80).":
-    "https://www.facebook.com/marketplace/item/1122848943187058/",
-  "Copas de cristal":
-    "https://www.facebook.com/marketplace/item/9285843118137588/",
+  // // Antigüedades
+  // "Vaso Chop De Cerveza Isenbeck":
+  //   "https://www.facebook.com/marketplace/item/615427021334365/",
+  // "Cuadro De Lancha De Carrera Lucas Nicolini (60x80).":
+  //   "https://www.facebook.com/marketplace/item/1122848943187058/",
+  // "Copas de cristal":
+  //   "https://www.facebook.com/marketplace/item/9285843118137588/",
 
-  // Electrónica
-  "Memoria crucial 8gb":
-    "https://www.facebook.com/marketplace/item/1151261540087663/",
-  "Pack Memoria crucial 8gb":
-    "https://www.facebook.com/marketplace/item/1379093489941424/",
-  "Camara en sensor de humo":
-    "https://www.facebook.com/marketplace/item/983162697099933/",
-  "Switch Multiplicador De Puertos Hdmi 4k":
-    "https://www.facebook.com/marketplace/item/1824739861672826/",
-  "Conversor Adaptador Convertidor Vga a HDMI con Audio":
-    "https://www.facebook.com/marketplace/item/975804534644501/",
-  "Adaptador Conversor Usb 2.0 A Vga Hembra Nisuta":
-    "https://www.facebook.com/marketplace/item/544849654810813/",
-  "Placa Pci A Usb Encore 4 Puertos Usb Amplía Los Usb.":
-    "https://www.facebook.com/marketplace/item/652657517358966/",
-  "Mini Teclado Genius Luxemate Qwerty":
-    "https://www.facebook.com/marketplace/item/1201595775013916/",
-  "Memoria Ram Notebook Samsung Ddr3 4gb":
-    "https://www.facebook.com/marketplace/item/2437869176550581/",
+  // // Electrónica
+  // "Memoria crucial 8gb":
+  //   "https://www.facebook.com/marketplace/item/1151261540087663/",
+  // "Pack Memoria crucial 8gb":
+  //   "https://www.facebook.com/marketplace/item/1379093489941424/",
+  // "Camara en sensor de humo":
+  //   "https://www.facebook.com/marketplace/item/983162697099933/",
+  // "Switch Multiplicador De Puertos Hdmi 4k":
+  //   "https://www.facebook.com/marketplace/item/1824739861672826/",
+  // "Conversor Adaptador Convertidor Vga a HDMI con Audio":
+  //   "https://www.facebook.com/marketplace/item/975804534644501/",
+  // "Adaptador Conversor Usb 2.0 A Vga Hembra Nisuta":
+  //   "https://www.facebook.com/marketplace/item/544849654810813/",
+  // "Placa Pci A Usb Encore 4 Puertos Usb Amplía Los Usb.":
+  //   "https://www.facebook.com/marketplace/item/652657517358966/",
+  // "Mini Teclado Genius Luxemate Qwerty":
+  //   "https://www.facebook.com/marketplace/item/1201595775013916/",
+  // "Memoria Ram Notebook Samsung Ddr3 4gb":
+  //   "https://www.facebook.com/marketplace/item/2437869176550581/",
 
   // Libros
   // "Libro Crímenes para resolver":
@@ -113,44 +113,38 @@ export const urlsML = {
   //   "https://www.facebook.com/marketplace/item/1528848161399812/",
   // "Libro Gandhi - Louis Fischer (Original). LIQUIDACIÓN":
   //   "https://www.facebook.com/marketplace/item/7812482412193589/",
-  "Libro shakespeare Comedias. LIQUIDACIÓN":
-    "https://www.facebook.com/marketplace/item/655544373650669",
-  "Libro Vida, pensamiento y obra - Gauss":
-    "https://www.facebook.com/marketplace/item/1656240881673060/",
-  "Libro Los secretos del ARTE CHINO":
-    "https://www.facebook.com/marketplace/item/1014533780599523/",
-  "Libro Los principios y beneficios del cambio - Dr. Myles munroe":
-    "https://www.facebook.com/marketplace/item/1344114253565626/",
-  "Libro Aprende A Programar Con Java. LIQUIDACIÓN":
-    "https://www.facebook.com/marketplace/item/2035039413661565/",
-  "Colección Libros Agatha Christie. LIQUIDACIÓN":
-    "https://www.facebook.com/marketplace/item/9839569659405370/",
-  "Gran Enciclopedia Del Saber National Geographic. LIQUIDACIÓN":
-    "https://www.facebook.com/marketplace/item/1357709702250442/",
-  "Libro Criptografía Protección De Datos Y Aplicaciones ( Original Fisico ). LIQUIDACIÓN":
-    "https://www.facebook.com/marketplace/item/636958425947091/",
-  "Libro Dickens - J.b Prietsley. Liquidación":
-    "https://www.facebook.com/marketplace/item/629757419829273/",
+  // "Libro shakespeare Comedias. LIQUIDACIÓN":
+  //   "https://www.facebook.com/marketplace/item/655544373650669",
+  // "Libro Vida, pensamiento y obra - Gauss":
+  //   "https://www.facebook.com/marketplace/item/1656240881673060/",
+  // "Libro Los secretos del ARTE CHINO":
+  //   "https://www.facebook.com/marketplace/item/1014533780599523/",
+  // "Libro Los principios y beneficios del cambio - Dr. Myles munroe":
+  //   "https://www.facebook.com/marketplace/item/1344114253565626/",
+  // "Libro Aprende A Programar Con Java. LIQUIDACIÓN":
+  //   "https://www.facebook.com/marketplace/item/2035039413661565/",
+  // "Colección Libros Agatha Christie. LIQUIDACIÓN":
+  //   "https://www.facebook.com/marketplace/item/9839569659405370/",
+  // "Gran Enciclopedia Del Saber National Geographic. LIQUIDACIÓN":
+  //   "https://www.facebook.com/marketplace/item/1357709702250442/",
+  // "Libro Criptografía Protección De Datos Y Aplicaciones ( Original Fisico ). LIQUIDACIÓN":
+  //   "https://www.facebook.com/marketplace/item/636958425947091/",
+  // "Libro Dickens - J.b Prietsley. Liquidación":
+  //   "https://www.facebook.com/marketplace/item/629757419829273/",
 
-  // Otros
-  "Microscopio Hokenn + kit":
-    "https://www.facebook.com/marketplace/item/3000663360073580/",
+  // // Otros
+  // "Microscopio Hokenn + kit":
+  //   "https://www.facebook.com/marketplace/item/3000663360073580/",
 
   //====================================
   //========MERCADOLIBRE================
   //====================================
 
   //Hogar
-  "Exahome Calefactor C1009. Liquidación":
-    "https://articulo.mercadolibre.com.ar/MLA-1969047380-exahome-calefactor-c1009-liquidacion-_JM",
   "Velador de Mesa Liquidación":
     "https://www.mercadolibre.com.ar/velador-de-mesa-liquidacion/up/MLAU3076097128",
-  "Lámpara de Pie Antigua de Hierro Forjado Liquidación":
-    "https://www.mercadolibre.com.ar/lampara-de-pie-antigua-de-hierro-forjado-liquidacion/up/MLAU3081892859",
   "Cajonera Cómoda 6 Cajones Dormitorio Liquidación":
     "https://www.mercadolibre.com.ar/cajonera-comoda-6-cajones-dormitorio-liquidacion/up/MLAU3075065325",
-  "Potes Antihumedad Liquidación":
-    "https://www.mercadolibre.com.ar/potes-antihumedad-liquidacion/up/MLAU3088832628",
   "Copas de Cristal Labradas x4 Liquidación":
     "https://www.mercadolibre.com.ar/copas-de-cristal-labradas-x4-liquidacion/up/MLAU3083467371",
   "Colchón 1 Plaza La Cardeuse":
@@ -159,8 +153,6 @@ export const urlsML = {
   //Ropa
   "Pantalón MMA Reforzado Cruge Liquidación":
     "https://articulo.mercadolibre.com.ar/MLA-1467905421-pantalon-mma-reforzado-cruge-liquidacion-_JM",
-  "Cinto Monocrom Nato Táctico de Combate Militar":
-    "https://www.mercadolibre.com.ar/cinto-monocrom-nato-tactico-de-combate-militar/up/MLAU3081910849",
 
   //Deportes
   "Raqueta de Tenis Prince Quantum Powerline Liquidación":
@@ -176,15 +168,13 @@ export const urlsML = {
 
   //Paintball
   "Máscara de Paintball Extreme Rage Liquidación":
-    "https://articulo.mercadolibre.com.ar/MLA-1464489677-mascara-de-paintball-extreme-rage-liquidacion-_JM",
+    "https://www.mercadolibre.com.ar/mascara-de-paintball-airsoft-extreme-rage-liquidacion/up/MLAU3218911942",
   "Chaleco Táctico de Paintball Grosstactical con Ghillie":
     "https://articulo.mercadolibre.com.ar/MLA-1464771653-chaleco-tactico-de-paintball-grosstactical-con-ghillie-_JM",
   "Rodilleras y Coderas Tácticas Paintball Airsoft Militar":
     "https://articulo.mercadolibre.com.ar/MLA-1974852660-rodilleras-y-coderas-tacticas-paintball-airsoft-militar-_JM",
   "Pods Paintball Empire Gen Global Otros x6 Liquidación":
     "https://articulo.mercadolibre.com.ar/MLA-1975438202-pods-paintball-empire-gen-global-otros-x6-liquidacion-_JM",
-  "Chaleco Táctico de Paintball Liquidación":
-    "https://articulo.mercadolibre.com.ar/MLA-1975569938-chaleco-tactico-de-paintball-liquidacion-_JM",
   "Funda Casco Militar Reversible con Ghillie Liquidación":
     "https://articulo.mercadolibre.com.ar/MLA-1973680454-funda-casco-militar-reversible-con-ghillie-liquidacion-_JM",
   "Marcadora de Paintball Tippmann A-5 Stealth Customizada":
@@ -199,22 +189,18 @@ export const urlsML = {
   //Antiguedades
   "Vaso Chop de Cerveza Isenbeck Importado de Colección 1L":
     "https://articulo.mercadolibre.com.ar/MLA-1456215693-vaso-chop-de-cerveza-isenbeck-importado-de-coleccion-1l-_JM",
-  "Cuadro de Lancha de Carrera Lucas Nicolini 60x80":
-    "https://articulo.mercadolibre.com.ar/MLA-1969047150-cuadro-de-lancha-de-carrera-lucas-nicolini-60x80-_JM",
-  "Copas de Cristal Labradas x4 Liquidación":
-    "https://www.mercadolibre.com.ar/copas-de-cristal-labradas-x4-liquidacion/up/MLAU3083467371",
+  // "Cuadro de Lancha de Carrera Lucas Nicolini 60x80":
+  //   "https://articulo.mercadolibre.com.ar/MLA-1969047150-cuadro-de-lancha-de-carrera-lucas-nicolini-60x80-_JM",
 
   //Electrónica
   "Memoria crucial 8gb":
     "https://www.mercadolibre.com.ar/memoria-ram-unidad-ddr4-8gb-crucial-cb8gu2666-sodimm/up/MLAU3113151323",
-  "Pack Memoria crucial 8gb":
-    "https://www.mercadolibre.com.ar/pack-memorias-ram-ddr4-8gb-crucial-cb8gu2666-sodimm/up/MLAU3118574890",
   "Conversor Adaptador Convertidor VGA a HDMI con Audio":
     "https://articulo.mercadolibre.com.ar/MLA-1929869212-conversor-adaptador-convertidor-vga-a-hdmi-con-audio-_JM",
   "Switch Multiplicador de Puertos HDMI 4K de 3 Puertos en 1":
     "https://articulo.mercadolibre.com.ar/MLA-1454365963-switch-multiplicador-de-puertos-hdmi-4k-de-3-puertos-en-1-_JM",
-  "Parlante Braun Speaker PC 180 Liquidación":
-    "https://articulo.mercadolibre.com.ar/MLA-1899211176-parlante-braun-speaker-pc-180-liquidacion-_JM",
+  // "Parlante Braun Speaker PC 180 Liquidación":
+  //   "https://articulo.mercadolibre.com.ar/MLA-1899211176-parlante-braun-speaker-pc-180-liquidacion-_JM",
   "Adaptador Conversor USB 2.0 a VGA Hembra Nisuta":
     "https://www.mercadolibre.com.ar/adaptador-conversor-usb-20-a-vga-hembra-nisuta/up/MLAU3079429021",
   "Cámara Espía Oculta en Sensor de Humo Full HD CCTV Newvision":
