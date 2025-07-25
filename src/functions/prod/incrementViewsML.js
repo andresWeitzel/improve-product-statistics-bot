@@ -26,15 +26,18 @@ export const incrementViewsML = async (io) => {
   console.log(`🎯 Visitando: ${productName}`);
   console.log(`🔗 URL: ${url}`);
 
-  // Eliminar executablePath, dejar que Puppeteer use su Chromium
+  // Configuración optimizada para entornos cloud
   const browser = await puppeteer.launch({
     headless: true,
+    product: 'chrome',
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
       "--disable-accelerated-2d-canvas",
       "--disable-gpu",
+      "--disable-web-security",
+      "--disable-features=VizDisplayCompositor",
       "--window-size=1920,1080",
     ],
   });
@@ -44,7 +47,10 @@ export const incrementViewsML = async (io) => {
 
   try {
     console.log(`🌐 Navegando a: ${url}`);
-    await page.goto(url, { timeout: 30000 });
+    await page.goto(url, { 
+      timeout: 30000,
+      waitUntil: 'domcontentloaded'
+    });
     console.log(`✅ Página cargada exitosamente`);
     
     logStatus(currentIndex + 1, "abierta", productName);
