@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import { chromium } from "playwright";
 import { urlsML } from "../../const/web.js";
 import {
   getNameFromUrlML,
@@ -26,19 +26,20 @@ export const incrementViewsML = async (io) => {
   console.log(`🎯 Visitando: ${productName}`);
   console.log(`🔗 URL: ${url}`);
 
-  // Configuración simple para Chromium en entornos cloud
-  const browser = await puppeteer.launch({
+  // Configuración para Playwright en entornos cloud
+  const browser = await chromium.launch({
     headless: true,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
-      "--disable-gpu",
     ],
   });
 
   const page = await browser.newPage();
-  await page.setUserAgent(getRandomUserAgent());
+  await page.setExtraHTTPHeaders({
+    'User-Agent': getRandomUserAgent()
+  });
 
   try {
     console.log(`🌐 Navegando a: ${url}`);
