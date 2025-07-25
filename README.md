@@ -1,4 +1,4 @@
-# Improve Product Statistics Bot
+# Improve Product Statistics Bot 🚀
 
 ## Correr localmente
 
