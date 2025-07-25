@@ -14,13 +14,27 @@ if (process.env.NODE_ENV === "production") {
 
 const app = express();
 const server = http.createServer(app);
-const io = new SocketIO(server);
+const io = new SocketIO(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 app.use(express.static("public"));
 
 // Agregar ruta de health check
 app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
+// Debug de Socket.IO
+io.on("connection", (socket) => {
+  console.log("🔌 Cliente conectado:", socket.id);
+  
+  socket.on("disconnect", () => {
+    console.log("🔌 Cliente desconectado:", socket.id);
+  });
 });
 
 const runIncrementViewsML = async () => {

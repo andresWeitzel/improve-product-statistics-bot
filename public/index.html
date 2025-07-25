@@ -8,6 +8,7 @@
   </head>
   <body>
     <h3>Historial de Visitas a Productos (ML)</h3>
+    <div id="connectionStatus" style="color: red; margin-bottom: 10px;">Conectando...</div>
     <table id="statusTable">
       <thead>
         <tr>
@@ -24,9 +25,31 @@
     <script>
       const socket = io();
       const statusContainer = document.getElementById("statusContainer");
+      const connectionStatus = document.getElementById("connectionStatus");
       let productCount = 0;
 
+      // Debug de conexión
+      socket.on("connect", () => {
+        console.log("✅ Conectado al servidor");
+        connectionStatus.textContent = "✅ Conectado al servidor";
+        connectionStatus.style.color = "green";
+      });
+
+      socket.on("disconnect", () => {
+        console.log("❌ Desconectado del servidor");
+        connectionStatus.textContent = "❌ Desconectado del servidor";
+        connectionStatus.style.color = "red";
+      });
+
+      socket.on("connect_error", (error) => {
+        console.error("❌ Error de conexión:", error);
+        connectionStatus.textContent = "❌ Error de conexión: " + error.message;
+        connectionStatus.style.color = "red";
+      });
+
       socket.on("update", ({ id, status, product, url, datetime }) => {
+        console.log("📡 Recibido update:", { id, status, product, url, datetime });
+        
         const row = document.createElement("tr");
         row.innerHTML = `
                 <td>${id}</td>
