@@ -15,6 +15,7 @@ const state = {
   refreshTimer: null,
   searchTimer: null,
   productListKey: "",
+  recentFailures: [],
 };
 
 const els = {
@@ -39,6 +40,7 @@ const els = {
   statFb: document.getElementById("statFb"),
   failList: document.getElementById("failList"),
   lastFailMeta: document.getElementById("lastFailMeta"),
+  copyFailsBtn: document.getElementById("copyFailsBtn"),
   productStats: document.getElementById("productStats"),
   timelineChart: document.getElementById("timelineChart"),
   timelineEmpty: document.getElementById("timelineEmpty"),
@@ -374,6 +376,9 @@ function renderStats(stats) {
   populateProductFilter(stats.products || (stats.productStats || []).map((p) => p.product));
 
   const failures = stats.recentFailures || [];
+  state.recentFailures = failures;
+  if (els.copyFailsBtn) els.copyFailsBtn.disabled = !failures.length;
+
   if (!failures.length) {
     els.lastFailMeta.textContent = "Sin fallos registrados.";
     els.failList.innerHTML = "";
@@ -439,6 +444,63 @@ async function loadActivityChart() {
     drawTimeline(buildTimelineFromVisits(data.items || [], 30));
   } catch (err) {
     console.error("Error cargando actividad:", err);
+  }
+}
+
+function formatFailLogs(failures) {
+  return failures
+    .map((f, i) => {
+      const plat = f.platform || "?";
+      const err = f.error || "(sin detalle)";
+      return [
+        `#${i + 1} | id=${f.id} | ${plat} | ${f.product}`,
+        `datetime: ${f.datetime}`,
+        f.url ? `url: ${f.url}` : null,
+        `error: ${err}`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+    })
+    .join("\n\n---\n\n");
+}
+
+async function copyFailLogs() {
+  const failures = state.recentFailures || [];
+  if (!failures.length) return;
+
+  const text = formatFailLogs(failures);
+  const btn = els.copyFailsBtn;
+  const prev = btn?.textContent;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    if (btn) {
+      btn.textContent = "Copiado";
+      setTimeout(() => {
+        btn.textContent = prev || "Copiar fails";
+      }, 1600);
+    }
+  } catch (err) {
+    console.error("Clipboard:", err);
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+      if (btn) {
+        btn.textContent = "Copiado";
+        setTimeout(() => {
+          btn.textContent = prev || "Copiar fails";
+        }, 1600);
+      }
+    } catch (e2) {
+      alert("No se pudo copiar al portapapeles");
+    }
+    ta.remove();
   }
 }
 
@@ -599,6 +661,7 @@ if (els.searchFilter) {
 
 if (els.clearDbBtn) els.clearDbBtn.addEventListener("click", clearMemoryDb);
 if (els.clearFiltersBtn) els.clearFiltersBtn.addEventListener("click", resetFilters);
+if (els.copyFailsBtn) els.copyFailsBtn.addEventListener("click", copyFailLogs);
 
 els.prev.addEventListener("click", () => {
   if (state.page <= 1) return;

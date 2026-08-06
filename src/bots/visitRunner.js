@@ -239,18 +239,17 @@ async function openFacebookListing(page, itemUrl, navTimeoutMs) {
   });
 }
 
-async function assertFacebookListingLoaded(page, productName) {
-  const finalUrl = await readPageUrl(page);
-  if (/\/login|checkpoint/i.test(finalUrl)) {
-    throw new Error(`Redirigido a login/checkpoint: ${finalUrl}`);
-  }
-
-  const check = await page.evaluate(() => {
+async function probeFacebookListing(page) {
+  return page.evaluate(() => {
     const text = (document.body?.innerText || "").replace(/\s+/g, " ");
+    const title = document.title || "";
     return {
-      title: document.title || "",
-      hasPrice: /\$\s?\d/.test(text),
-      hasMessage: /enviar mensaje|message seller|message/i.test(text),
+      title,
+      hasPrice: /\$\s?\d|ARS\s*\d|USD\s*\d|\d[\d.]*\s*(ARS|USD)/i.test(text),
+      hasMessage:
+        /enviar mensaje|message seller|enviar un mensaje|message/i.test(text),
+      hasMarketplaceTitle: /facebook\s*marketplace/i.test(title),
+      hasListingUrl: /marketplace\/item\//i.test(location.href),
       hasUnavailable:
         /no disponible|no longer available|contenido no disponible|esta publicaci[oó]n no est/i.test(
           text
@@ -258,18 +257,52 @@ async function assertFacebookListingLoaded(page, productName) {
       snippet: text.slice(0, 180),
     };
   });
+}
 
-  if (check.hasUnavailable) {
-    throw new Error(`Publicación no disponible: ${productName}`);
+/**
+ * FB a menudo setea el <title> del listing antes de pintar precio/CTA.
+ * Reintentamos y aceptamos título Marketplace + URL de item como OK.
+ */
+async function assertFacebookListingLoaded(page, productName) {
+  const finalUrl = await readPageUrl(page);
+  if (/\/login|checkpoint/i.test(finalUrl)) {
+    throw new Error(`Redirigido a login/checkpoint: ${finalUrl}`);
   }
 
-  if (!check.hasPrice && !check.hasMessage) {
-    throw new Error(
-      `Listing FB sin contenido usable (${productName}): ${check.title || check.snippet}`
-    );
+  let check = null;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    try {
+      check = await probeFacebookListing(page);
+    } catch (err) {
+      if (isNavRaceError(err) && attempt < 4) {
+        await sleep(1200);
+        continue;
+      }
+      throw err;
+    }
+
+    if (check.hasUnavailable) {
+      throw new Error(`Publicación no disponible: ${productName}`);
+    }
+
+    const usable =
+      check.hasPrice ||
+      check.hasMessage ||
+      (check.hasMarketplaceTitle && check.hasListingUrl) ||
+      (check.hasListingUrl &&
+        check.title &&
+        !/^facebook$/i.test(check.title.trim()));
+
+    if (usable) {
+      return check;
+    }
+
+    await sleep(1200 + attempt * 400);
   }
 
-  return check;
+  throw new Error(
+    `Listing FB sin contenido usable (${productName}): ${check?.title || check?.snippet || "vacío"}`
+  );
 }
 
 async function interactFacebookListing(page) {
@@ -353,9 +386,9 @@ export function createVisitBot(platform) {
 
         if (platform.id === "facebook") {
           const check = await assertFacebookListingLoaded(page, productName);
-          console.log(
-            `${tag} 📄 Listing OK · price=${check.hasPrice} msg=${check.hasMessage} · ${page.url()}`
-          );
+        console.log(
+          `${tag} 📄 Listing OK · price=${check.hasPrice} msg=${check.hasMessage} title=${Boolean(check.hasMarketplaceTitle)} · ${page.url()}`
+        );
           await interactFacebookListing(page);
         } else {
           const finalUrl = await readPageUrl(page);
