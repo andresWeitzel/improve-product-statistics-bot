@@ -4,6 +4,7 @@ const state = {
   page: 1,
   totalPages: 1,
   status: "all",
+  platform: "all",
   range: "all",
   date: "",
   hourFrom: "",
@@ -34,6 +35,8 @@ const els = {
   statOk: document.getElementById("statOk"),
   statFail: document.getElementById("statFail"),
   statRate: document.getElementById("statRate"),
+  statMl: document.getElementById("statMl"),
+  statFb: document.getElementById("statFb"),
   failList: document.getElementById("failList"),
   lastFailMeta: document.getElementById("lastFailMeta"),
   productStats: document.getElementById("productStats"),
@@ -288,16 +291,47 @@ function populateProductFilter(products) {
     .join("");
 }
 
+function platformLabel(platform) {
+  return platform === "facebook" ? "FB" : "ML";
+}
+
+function platformClass(platform) {
+  return platform === "facebook" ? "platform-pill--fb" : "platform-pill--ml";
+}
+
+function resolvePlatformClient(platform, url = "") {
+  const p = String(platform || "").toLowerCase();
+  if (p === "facebook" || p === "fb") return "facebook";
+  if (p === "mercadolibre" || p === "ml") return "mercadolibre";
+  const u = String(url || "").toLowerCase();
+  if (u.includes("facebook.com") || u.includes("fb.com")) return "facebook";
+  return "mercadolibre";
+}
+
+function setTableLoading(isLoading) {
+  if (!els.tbody) return;
+  els.tbody.style.opacity = isLoading ? "0.45" : "1";
+}
+
+function applyFiltersAndReload() {
+  // Cancelar refresh del socket para que no pise el resultado del filtro
+  clearTimeout(state.refreshTimer);
+  state.page = 1;
+  loadHistory(true);
+}
+
 function renderHistory(payload) {
   const items = payload.items || [];
   state.page = payload.page || 1;
   state.totalPages = payload.totalPages || 1;
 
   els.tbody.innerHTML = items
-    .map(
-      (row) => `
+    .map((row) => {
+      const plat = resolvePlatformClient(row.platform, row.url);
+      return `
       <tr>
         <td>${escapeHtml(row.id)}</td>
+        <td><span class="platform-pill ${platformClass(plat)}">${platformLabel(plat)}</span></td>
         <td>
           <span class="status-cell">
             <span class="lamp ${row.status === "ok" ? "ok" : "fail"}"></span>
@@ -306,14 +340,15 @@ function renderHistory(payload) {
         </td>
         <td><a href="${escapeHtml(row.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.product)}</a></td>
         <td>${escapeHtml(row.datetime)}</td>
-      </tr>`
-    )
+      </tr>`;
+    })
     .join("");
 
   els.empty.classList.toggle("hidden", items.length > 0);
   els.pageInfo.textContent = `Página ${state.page} / ${state.totalPages} · ${payload.total || 0} registros`;
   els.prev.disabled = state.page <= 1;
   els.next.disabled = state.page >= state.totalPages;
+  setTableLoading(false);
 }
 
 function renderStats(stats) {
@@ -323,6 +358,12 @@ function renderStats(stats) {
   els.statOk.textContent = String(stats.ok ?? 0);
   els.statFail.textContent = String(stats.fail ?? 0);
   els.statRate.textContent = `${stats.successRate ?? 0}%`;
+  if (els.statMl) {
+    els.statMl.textContent = String(stats.byPlatform?.mercadolibre?.total ?? 0);
+  }
+  if (els.statFb) {
+    els.statFb.textContent = String(stats.byPlatform?.facebook?.total ?? 0);
+  }
 
   drawRatio(stats.ok || 0, stats.fail || 0);
 
@@ -416,6 +457,7 @@ async function clearMemoryDb() {
 
 function resetFilters() {
   state.status = "all";
+  state.platform = "all";
   state.range = "all";
   state.date = "";
   state.hourFrom = "";
@@ -427,6 +469,9 @@ function resetFilters() {
   document.querySelectorAll(".filter[data-status]").forEach((b) => {
     b.classList.toggle("is-active", b.dataset.status === "all");
   });
+  document.querySelectorAll(".filter[data-platform]").forEach((b) => {
+    b.classList.toggle("is-active", b.dataset.platform === "all");
+  });
   setRangeActive("all");
   if (els.dateFilter) els.dateFilter.value = "";
   if (els.hourFromFilter) els.hourFromFilter.value = "";
@@ -436,13 +481,15 @@ function resetFilters() {
   loadHistory();
 }
 
-async function loadHistory() {
+async function loadHistory(showLoading = false) {
   const reqId = ++state.historyReq;
+  if (showLoading) setTableLoading(true);
   try {
     const params = new URLSearchParams({
       page: String(state.page),
       limit: String(PAGE_SIZE),
       status: state.status,
+      platform: state.platform,
       range: state.date ? "all" : state.range,
       product: state.product,
       q: state.q,
@@ -457,6 +504,7 @@ async function loadHistory() {
     renderHistory(data);
   } catch (err) {
     console.error("Error cargando historial:", err);
+    if (reqId === state.historyReq) setTableLoading(false);
   }
 }
 
@@ -484,8 +532,16 @@ document.querySelectorAll(".filter[data-status]").forEach((btn) => {
     document.querySelectorAll(".filter[data-status]").forEach((b) => b.classList.remove("is-active"));
     btn.classList.add("is-active");
     state.status = btn.dataset.status;
-    state.page = 1;
-    loadHistory();
+    applyFiltersAndReload();
+  });
+});
+
+document.querySelectorAll(".filter[data-platform]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter[data-platform]").forEach((b) => b.classList.remove("is-active"));
+    btn.classList.add("is-active");
+    state.platform = btn.dataset.platform;
+    applyFiltersAndReload();
   });
 });
 
@@ -495,8 +551,7 @@ document.querySelectorAll(".filter[data-range]").forEach((btn) => {
     state.range = btn.dataset.range;
     state.date = "";
     if (els.dateFilter) els.dateFilter.value = "";
-    state.page = 1;
-    loadHistory();
+    applyFiltersAndReload();
   });
 });
 
@@ -507,32 +562,28 @@ if (els.dateFilter) {
       state.range = "all";
       setRangeActive("all");
     }
-    state.page = 1;
-    loadHistory();
+    applyFiltersAndReload();
   });
 }
 
 if (els.hourFromFilter) {
   els.hourFromFilter.addEventListener("change", () => {
     state.hourFrom = els.hourFromFilter.value;
-    state.page = 1;
-    loadHistory();
+    applyFiltersAndReload();
   });
 }
 
 if (els.hourToFilter) {
   els.hourToFilter.addEventListener("change", () => {
     state.hourTo = els.hourToFilter.value;
-    state.page = 1;
-    loadHistory();
+    applyFiltersAndReload();
   });
 }
 
 if (els.productFilter) {
   els.productFilter.addEventListener("change", () => {
     state.product = els.productFilter.value;
-    state.page = 1;
-    loadHistory();
+    applyFiltersAndReload();
   });
 }
 
@@ -541,8 +592,7 @@ if (els.searchFilter) {
     clearTimeout(state.searchTimer);
     state.searchTimer = setTimeout(() => {
       state.q = els.searchFilter.value.trim();
-      state.page = 1;
-      loadHistory();
+      applyFiltersAndReload();
     }, 250);
   });
 }

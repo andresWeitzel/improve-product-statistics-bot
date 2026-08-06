@@ -7,16 +7,8 @@ import {
   getDbMeta,
   clearDb,
 } from "./db/memoryDb.js";
-
-// Selección dinámica de la función según entorno
-let incrementViewsML;
-if (process.env.NODE_ENV === "production") {
-  incrementViewsML = (await import("./functions/prod/incrementViewsML.js")).incrementViewsML;
-  console.log("🔧 Usando función de PRODUCCIÓN");
-} else {
-  incrementViewsML = (await import("./functions/local/incrementViewsML.js")).incrementViewsML;
-  console.log("🔧 Usando función LOCAL");
-}
+import { platforms } from "./const/platforms.js";
+import { createVisitBot } from "./bots/visitRunner.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -38,7 +30,21 @@ app.get("/api/history", (req, res) => {
   const date = req.query.date || "";
   const hourFrom = req.query.hourFrom ?? "";
   const hourTo = req.query.hourTo ?? "";
-  res.json(getHistory({ page, limit, status, product, q, range, date, hourFrom, hourTo }));
+  const platform = req.query.platform || "all";
+  res.json(
+    getHistory({
+      page,
+      limit,
+      status,
+      product,
+      q,
+      range,
+      date,
+      hourFrom,
+      hourTo,
+      platform,
+    })
+  );
 });
 
 app.get("/api/stats", (_req, res) => {
@@ -47,6 +53,18 @@ app.get("/api/stats", (_req, res) => {
 
 app.get("/api/db", (_req, res) => {
   res.json(getDbMeta());
+});
+
+app.get("/api/platforms", (_req, res) => {
+  res.json(
+    Object.values(platforms).map((p) => ({
+      id: p.id,
+      label: p.label,
+      short: p.short,
+      enabled: p.enabled,
+      products: Object.keys(p.urls || {}).length,
+    }))
+  );
 });
 
 app.post("/api/db/clear", (_req, res) => {
@@ -66,16 +84,20 @@ io.on("connection", (socket) => {
   });
 });
 
-const runIncrementViewsML = async () => {
-  try {
-    console.log("🚀 Iniciando incrementViewsML...");
-    await incrementViewsML(io);
-  } catch (error) {
-    console.error("❌ Error en incrementViewsML:", error.message);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    runIncrementViewsML();
+async function runBotWithRestart(bot) {
+  const name = bot.platform.label;
+  while (true) {
+    try {
+      console.log(`🚀 Iniciando bot ${name}...`);
+      await bot.run(io);
+      // run() solo retorna si no hay URLs
+      await new Promise((r) => setTimeout(r, 10000));
+    } catch (error) {
+      console.error(`❌ Bot ${name} crash:`, error.message);
+      await new Promise((r) => setTimeout(r, 5000));
+    }
   }
-};
+}
 
 const startServer = async () => {
   try {
@@ -87,8 +109,13 @@ const startServer = async () => {
     });
 
     setTimeout(() => {
-      console.log("🔄 Iniciando bot de visitas...");
-      runIncrementViewsML();
+      const enabled = Object.values(platforms).filter((p) => p.enabled);
+      console.log(`🔄 Lanzando ${enabled.length} bots en paralelo...`);
+      for (const platform of enabled) {
+        const bot = createVisitBot(platform);
+        // no await: cada bot corre en su propio “hilo” async
+        runBotWithRestart(bot);
+      }
     }, 3000);
   } catch (error) {
     console.error("❌ Error al iniciar el servidor:", error);

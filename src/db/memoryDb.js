@@ -9,6 +9,19 @@ const DB_FILE = path.join(DATA_DIR, "visits.json");
 const MAX_VISITS = 5000;
 const SAVE_DEBOUNCE_MS = 400;
 
+/** Infere ML/FB desde URL o valor explícito. */
+export function resolvePlatform(platform, url = "") {
+  const p = String(platform || "").toLowerCase().trim();
+  if (p === "facebook" || p === "fb") return "facebook";
+  if (p === "mercadolibre" || p === "ml") return "mercadolibre";
+  const u = String(url || "").toLowerCase();
+  if (u.includes("facebook.com") || u.includes("fb.com")) return "facebook";
+  if (u.includes("mercadolibre.") || u.includes("mercadolivre.") || u.includes("meli.")) {
+    return "mercadolibre";
+  }
+  return "mercadolibre";
+}
+
 /**
  * Mini DB en memoria para visitas / fallos.
  * - Lecturas/escrituras en RAM
@@ -46,8 +59,20 @@ class MemoryDb {
       if (!parsed || !Array.isArray(parsed.visits)) return;
 
       this.nextId = Number(parsed.nextId) || 1;
-      this.visits = parsed.visits;
+      this.visits = parsed.visits.map((v) => ({
+        ...v,
+        platform: resolvePlatform(v.platform, v.url),
+      }));
       this._rebuildIndexes();
+      // Persistir backfill de platform si faltaba
+      const needsSave = parsed.visits.some(
+        (v, i) => v.platform !== this.visits[i].platform
+      );
+      if (needsSave) {
+        this._dirty = true;
+        this._flush();
+        console.log("🧠 Memory DB: platform inferida/normalizada desde URLs");
+      }
       console.log(
         `🧠 Memory DB cargada: ${this.counters.total} visitas (${this.counters.ok} ok / ${this.counters.fail} fail)`
       );
@@ -118,14 +143,15 @@ class MemoryDb {
   }
 
   /**
-   * @param {{ status: "ok"|"fail", product: string, url: string, error?: string|null }} entry
+   * @param {{ status: "ok"|"fail", product: string, url: string, error?: string|null, platform?: string }} entry
    */
-  insertVisit({ status, product, url, error = null }) {
+  insertVisit({ status, product, url, error = null, platform = null }) {
     const visit = {
       id: this.nextId++,
       status,
       product,
       url,
+      platform: resolvePlatform(platform, url),
       datetime: updateDateTime(),
       iso: new Date().toISOString(),
       error: error || null,
@@ -139,7 +165,6 @@ class MemoryDb {
 
     if (this.visits.length > MAX_VISITS) {
       const removed = this.visits.splice(MAX_VISITS);
-      // rebuild si hubo purge (raro; mantiene índices coherentes)
       if (removed.length) this._rebuildIndexes();
     }
 
@@ -157,6 +182,7 @@ class MemoryDb {
     date = "",
     hourFrom = "",
     hourTo = "",
+    platform = "all",
   } = {}) {
     const safePage = Math.max(1, Number(page) || 1);
     const safeLimit = Math.min(100, Math.max(1, Number(limit) || 15));
@@ -164,6 +190,7 @@ class MemoryDb {
     const productFilter = String(product || "").trim();
     const query = String(q || "").trim().toLowerCase();
     const rangeFilter = String(range || "all").toLowerCase();
+    const platformFilter = String(platform || "all").toLowerCase();
     const dayFilter = String(date || "").trim(); // YYYY-MM-DD
     const hFrom =
       hourFrom === "" || hourFrom == null ? null : Math.min(23, Math.max(0, Number(hourFrom)));
@@ -205,6 +232,11 @@ class MemoryDb {
     if (filter === "ok" || filter === "fail") {
       list = list.filter((v) => v.status === filter);
     }
+    if (platformFilter === "mercadolibre" || platformFilter === "facebook") {
+      list = list.filter(
+        (v) => resolvePlatform(v.platform, v.url) === platformFilter
+      );
+    }
     if (productFilter) {
       list = list.filter((v) => v.product === productFilter);
     }
@@ -242,8 +274,13 @@ class MemoryDb {
     const currentPage = Math.min(safePage, totalPages);
     const start = (currentPage - 1) * safeLimit;
 
+    const items = list.slice(start, start + safeLimit).map((v) => ({
+      ...v,
+      platform: resolvePlatform(v.platform, v.url),
+    }));
+
     return {
-      items: list.slice(start, start + safeLimit),
+      items,
       page: currentPage,
       limit: safeLimit,
       total,
@@ -252,6 +289,7 @@ class MemoryDb {
       product: productFilter,
       q: query,
       range: rangeFilter,
+      platform: platformFilter,
       date: dayFilter,
       hourFrom: hFrom,
       hourTo: hTo,
@@ -336,6 +374,14 @@ class MemoryDb {
 
     const products = productStats.map((p) => p.product);
 
+    const byPlatform = { mercadolibre: { ok: 0, fail: 0, total: 0 }, facebook: { ok: 0, fail: 0, total: 0 } };
+    for (const v of this.visits) {
+      const key = resolvePlatform(v.platform, v.url);
+      byPlatform[key].total += 1;
+      if (v.status === "ok") byPlatform[key].ok += 1;
+      else byPlatform[key].fail += 1;
+    }
+
     return {
       total: this.counters.total,
       ok: this.counters.ok,
@@ -346,6 +392,7 @@ class MemoryDb {
       recentFailures: failures,
       productStats,
       products,
+      byPlatform,
       timeline: this.getTimeline(),
       memory: {
         engine: "memory",

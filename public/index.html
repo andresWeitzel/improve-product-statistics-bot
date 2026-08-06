@@ -51,6 +51,14 @@
         <span class="metric__label">Éxito</span>
         <strong id="statRate" class="metric__value">0%</strong>
       </div>
+      <div class="metric metric--ml">
+        <span class="metric__label">ML</span>
+        <strong id="statMl" class="metric__value">0</strong>
+      </div>
+      <div class="metric metric--fb">
+        <span class="metric__label">FB</span>
+        <strong id="statFb" class="metric__value">0</strong>
+      </div>
     </section>
 
     <section class="charts" aria-label="Gráficos en tiempo real">
@@ -86,6 +94,15 @@
 
           <div class="filter-bar">
             <div class="filter-grid">
+              <div class="filter-block">
+                <span class="filter-label">Plataforma</span>
+                <div class="filters filters--full" role="group" aria-label="Plataforma">
+                  <button type="button" class="filter is-active" data-platform="all">Todas</button>
+                  <button type="button" class="filter" data-platform="mercadolibre">MercadoLibre</button>
+                  <button type="button" class="filter" data-platform="facebook">Facebook</button>
+                </div>
+              </div>
+
               <div class="filter-block">
                 <span class="filter-label">Estado</span>
                 <div class="filters filters--full" role="group" aria-label="Estado">
@@ -152,6 +169,7 @@
             <thead>
               <tr>
                 <th>ID</th>
+                <th>Plataforma</th>
                 <th>Estado</th>
                 <th>Producto</th>
                 <th>Fecha</th>

@@ -174,9 +174,41 @@ h2 {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0.75rem;
   margin-bottom: 1.25rem;
+}
+
+.metric--ml .metric__value {
+  color: var(--accent);
+}
+
+.metric--fb .metric__value {
+  color: #7aa2ff;
+}
+
+.platform-pill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  border: 1px solid var(--line);
+}
+
+.platform-pill--ml {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-color: rgba(77, 184, 201, 0.35);
+}
+
+.platform-pill--fb {
+  color: #9db6ff;
+  background: rgba(122, 162, 255, 0.14);
+  border-color: rgba(122, 162, 255, 0.35);
 }
 
 .metric {
@@ -636,7 +668,7 @@ td a:hover {
 
 @media (max-width: 900px) {
   .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .charts,
