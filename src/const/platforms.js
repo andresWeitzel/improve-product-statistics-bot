@@ -24,11 +24,12 @@ export const platforms = {
         "https://www.mercadolibre.com.ar/multigimnasio-everlast-liquidacion/up/MLAU2889015601",
     },
     // Tunning ML (ajustable con el tiempo)
-    pauseBetweenMs: 8000,
+    // domcontentloaded: ML hace redirects; "load" falla mucho / response null
+    pauseBetweenMs: 10000,
     pauseJitterMs: 4000,
-    stayOnPageMs: 12000,
+    stayOnPageMs: 10000,
     navTimeoutMs: 60000,
-    waitUntil: "load",
+    waitUntil: "domcontentloaded",
   },
 
   facebook: {
@@ -52,7 +53,17 @@ export const platforms = {
 };
 
 /** Compat: mapa plano ML (código viejo / prod). */
-export const urlsML = platforms.mercadolibre.urls;
+export const urlsML = Object.fromEntries(
+  Object.entries(platforms.mercadolibre.urls).map(([k, v]) => [
+    k,
+    typeof v === "string" ? v : v.url,
+  ])
+);
 
 /** Compat: mapa plano FB. */
-export const urlsFB = platforms.facebook.urls;
+export const urlsFB = Object.fromEntries(
+  Object.entries(platforms.facebook.urls).map(([k, v]) => [
+    k,
+    typeof v === "string" ? v : v.url,
+  ])
+);

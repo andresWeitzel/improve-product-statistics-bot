@@ -108,12 +108,16 @@ const startServer = async () => {
       console.log(`🧠 DB: http://localhost:${PORT}/api/db`);
     });
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const enabled = Object.values(platforms).filter((p) => p.enabled);
       console.log(`🔄 Lanzando ${enabled.length} bots en paralelo...`);
-      for (const platform of enabled) {
+      for (let i = 0; i < enabled.length; i++) {
+        const platform = enabled[i];
         const bot = createVisitBot(platform);
-        // no await: cada bot corre en su propio “hilo” async
+        // Escalonar arranque: 2 Edge a la vez saturan ML (response null / context destroyed)
+        if (i > 0) {
+          await new Promise((r) => setTimeout(r, 5000));
+        }
         runBotWithRestart(bot);
       }
     }, 3000);
