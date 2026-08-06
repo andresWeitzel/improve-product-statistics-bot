@@ -7,8 +7,10 @@
   "scripts": {
     "start": "node --expose-gc src/server.js",
     "start:free": "node --expose-gc --max-old-space-size=256 src/server.js",
-    "dev": "NODE_ENV=local node src/server.js",
-    "postinstall": "npx puppeteer browsers install chrome"
+    "dev": "node scripts/dev.mjs",
+    "postinstall": "npx puppeteer browsers install chrome",
+    "docker:up": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/Start-Bot-Docker.ps1",
+    "docker:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/Start-Bot-Docker.ps1 -Clean"
   },
   "author": "",
   "license": "ISC",

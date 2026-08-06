@@ -1,0 +1,21 @@
+# Compose project name in Docker Desktop.
+name: improve-product-statistics-bot
+
+services:
+  improve-product-statistics-bot:
+    build: .
+    image: improve-product-statistics-bot:local
+    container_name: improve-product-statistics-bot
+    ports:
+      - "9008:9008"
+    environment:
+      NODE_ENV: production
+      PORT: "9008"
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+    volumes:
+      # Persist visit history across rebuilds/recreates
+      - ./data:/app/data
+    # Chromium needs extra shared memory; avoid /dev/shm crashes
+    shm_size: "256mb"
+    restart: unless-stopped

@@ -3,64 +3,191 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="index.css" />
-    <title>Historial de Productos</title>
+    <title>Improve Product Statistics Bot</title>
   </head>
   <body>
-    <h3>Historial de Visitas a Productos (ML)</h3>
-    <div id="connectionStatus" style="color: red; margin-bottom: 10px;">Conectando...</div>
-    <table id="statusTable">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Estado</th>
-          <th>Producto</th>
-          <th>Fecha</th>
-        </tr>
-      </thead>
-      <tbody id="statusContainer"></tbody>
-    </table>
+    <div class="bg" aria-hidden="true"></div>
+
+    <header class="top">
+      <div class="brand-block">
+        <div class="brand-row">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <p class="brand">Improve Product Statistics</p>
+        </div>
+        <h1>Monitor de visitas</h1>
+      </div>
+      <div class="top-actions">
+        <button type="button" id="clearDbBtn" class="ghost-btn" title="Vaciar registros">
+          Limpiar historial
+        </button>
+        <div id="connectionStatus" class="conn conn--pending" role="status">
+          <span class="conn__dot" aria-hidden="true"></span>
+          <span class="conn__text">Conectando…</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="metrics" aria-label="Estadísticas">
+      <div class="metric">
+        <span class="metric__label">Total</span>
+        <strong id="statTotal" class="metric__value">0</strong>
+      </div>
+      <div class="metric metric--ok">
+        <span class="metric__label">OK</span>
+        <strong id="statOk" class="metric__value">0</strong>
+      </div>
+      <div class="metric metric--fail">
+        <span class="metric__label">Fallos</span>
+        <strong id="statFail" class="metric__value">0</strong>
+      </div>
+      <div class="metric">
+        <span class="metric__label">Éxito</span>
+        <strong id="statRate" class="metric__value">0%</strong>
+      </div>
+    </section>
+
+    <section class="charts" aria-label="Gráficos en tiempo real">
+      <div class="panel chart-panel">
+        <div class="panel__head">
+          <h2 id="timelineTitle">Actividad</h2>
+          <span class="live-tag"><span class="live-tag__dot"></span> en vivo</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="timelineChart"></canvas>
+          <p id="timelineEmpty" class="chart-empty hidden">Sin datos de actividad aún.</p>
+        </div>
+      </div>
+      <div class="panel chart-panel chart-panel--side">
+        <div class="panel__head">
+          <h2>OK vs Fallos</h2>
+        </div>
+        <div class="chart-wrap chart-wrap--donut">
+          <canvas id="ratioChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <main class="layout">
+      <section class="panel history-panel" aria-labelledby="history-title">
+        <div class="panel__head panel__head--stack">
+          <div class="history-title-row">
+            <h2 id="history-title">Historial completo</h2>
+            <button type="button" id="clearFiltersBtn" class="ghost-btn ghost-btn--small">
+              Reset filtros
+            </button>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-grid">
+              <div class="filter-block">
+                <span class="filter-label">Estado</span>
+                <div class="filters filters--full" role="group" aria-label="Estado">
+                  <button type="button" class="filter is-active" data-status="all">Todos</button>
+                  <button type="button" class="filter" data-status="ok">OK</button>
+                  <button type="button" class="filter" data-status="fail">Fallos</button>
+                </div>
+              </div>
+
+              <div class="filter-block">
+                <span class="filter-label">Tiempo</span>
+                <div class="filters filters--full filters--wrap" role="group" aria-label="Rango">
+                  <button type="button" class="filter range is-active" data-range="all">Todo</button>
+                  <button type="button" class="filter range" data-range="15m">15m</button>
+                  <button type="button" class="filter range" data-range="1h">1h</button>
+                  <button type="button" class="filter range" data-range="6h">6h</button>
+                  <button type="button" class="filter range" data-range="24h">24h</button>
+                  <button type="button" class="filter range" data-range="today">Hoy</button>
+                  <button type="button" class="filter range" data-range="yesterday">Ayer</button>
+                  <button type="button" class="filter range" data-range="7d">7d</button>
+                </div>
+              </div>
+
+              <div class="filter-block filter-block--controls">
+                <label class="field">
+                  <span class="filter-label">Día</span>
+                  <input id="dateFilter" class="control" type="date" />
+                </label>
+                <label class="field">
+                  <span class="filter-label">Desde</span>
+                  <select id="hourFromFilter" class="control" aria-label="Hora desde">
+                    <option value="">--</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="filter-label">Hasta</span>
+                  <select id="hourToFilter" class="control" aria-label="Hora hasta">
+                    <option value="">--</option>
+                  </select>
+                </label>
+                <label class="field field--grow">
+                  <span class="filter-label">Producto</span>
+                  <select id="productFilter" class="control" aria-label="Producto">
+                    <option value="">Todos los productos</option>
+                  </select>
+                </label>
+                <label class="field field--grow">
+                  <span class="filter-label">Buscar</span>
+                  <input
+                    id="searchFilter"
+                    class="control"
+                    type="search"
+                    placeholder="Producto, error o ID…"
+                    autocomplete="off"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="statusTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Estado</th>
+                <th>Producto</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="statusContainer"></tbody>
+          </table>
+          <p id="historyEmpty" class="empty hidden">Sin visitas registradas aún.</p>
+        </div>
+
+        <div class="pager">
+          <button type="button" id="prevPage" class="pager__btn" disabled>← Anterior</button>
+          <span id="pageInfo" class="pager__info">Página 1 / 1</span>
+          <button type="button" id="nextPage" class="pager__btn" disabled>Siguiente →</button>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="panel" aria-labelledby="fail-title">
+          <div class="panel__head">
+            <h2 id="fail-title">Últimas fallas</h2>
+          </div>
+          <p id="lastFailMeta" class="meta">Sin fallos registrados.</p>
+          <ul id="failList" class="fail-list"></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="product-title">
+          <div class="panel__head">
+            <h2 id="product-title">Por producto</h2>
+          </div>
+          <ul id="productStats" class="product-list"></ul>
+        </section>
+      </aside>
+    </main>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-      const socket = io();
-      const statusContainer = document.getElementById("statusContainer");
-      const connectionStatus = document.getElementById("connectionStatus");
-      let productCount = 0;
-
-      // Debug de conexión
-      socket.on("connect", () => {
-        console.log("✅ Conectado al servidor");
-        connectionStatus.textContent = "✅ Conectado al servidor";
-        connectionStatus.style.color = "green";
-      });
-
-      socket.on("disconnect", () => {
-        console.log("❌ Desconectado del servidor");
-        connectionStatus.textContent = "❌ Desconectado del servidor";
-        connectionStatus.style.color = "red";
-      });
-
-      socket.on("update", ({ id, status, product, url, datetime }) => {
-        console.log("📡 Recibido update:", { id, status, product, url, datetime });
-        
-        const row = document.createElement("tr");
-        row.innerHTML = `
-                <td>${id}</td>
-                <td><div class="lamp ${
-                  status === "ok" ? "ok" : "fail"
-                }"></div></td>
-                <td><a href="${url}" target="_blank">${product}</a></td>
-                <td>${datetime}</td>
-            `;
-        statusContainer.appendChild(row);
-        productCount++;
-
-        if (productCount >= 15) {
-          productCount = 0;
-          location.reload();
-        }
-      });
-    </script>
+    <script src="app.js"></script>
   </body>
 </html>

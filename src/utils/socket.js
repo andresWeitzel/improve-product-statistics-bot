@@ -1,15 +1,18 @@
-// Importar la función updateDateTime usando ES Modules
-import { updateDateTime } from "./dateTime.js";
+import { recordVisit, getStats } from "../db/memoryDb.js";
 
-async function emitStatus(io, id, status, product, url) {
-  io.emit("update", {
-    id,
-    status,
-    product,
-    url,
-    datetime: updateDateTime(),
-  });
+/**
+ * Persiste la visita y la emite al frontend.
+ * @param {import("socket.io").Server} io
+ * @param {number} _legacyId índice de producto (compat); el store asigna id único
+ * @param {"ok"|"fail"} status
+ * @param {string} product
+ * @param {string} url
+ * @param {string|null} [error]
+ */
+async function emitStatus(io, _legacyId, status, product, url, error = null) {
+  const visit = recordVisit({ status, product, url, error });
+  io.emit("update", visit);
+  io.emit("stats", getStats());
 }
 
-// Exportar la función usando sintaxis de módulos ES
 export { emitStatus };

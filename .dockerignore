@@ -8,4 +8,10 @@ README.md
 coverage
 .DS_Store
 logs
-*.log 
+*.log
+*.md
+docs
+scripts
+.dockerignore
+docker-compose.yml
+render.yaml

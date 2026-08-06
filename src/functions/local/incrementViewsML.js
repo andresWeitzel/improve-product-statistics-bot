@@ -1,16 +1,27 @@
 import puppeteer from "puppeteer";
 import { urlsML } from "../../const/web.js";
-import {
-  getRandomUserAgent,
-} from "../../utils/conversions.js";
+import { getRandomUserAgent } from "../../utils/conversions.js";
 import { logStatus } from "../../utils/logging.js";
 import { emitStatus } from "../../utils/socket.js";
+import { resolveBrowserExecutablePath } from "../../utils/browserPath.js";
 
 let currentIndex = 0;
 let visitCounter = 0;
-const BROWSER_FULL_FLOW_TIMEOUT = 2000; // Más rápido en local
-const BROWSER_OPEN_TIMEOUT = 45000; // Más tiempo en local
-const VISIT_TIMEOUT = 40000; // Más tiempo en local
+const PAUSE_BETWEEN_VISITS_MS = 2000;
+const NAV_TIMEOUT_MS = 45000;
+const STAY_ON_PAGE_MS = 2500;
+
+/** Args estables en Windows (Edge/Chrome). Evitar --single-process / --no-zygote. */
+const LAUNCH_ARGS = [
+  "--no-sandbox",
+  "--disable-setuid-sandbox",
+  "--disable-dev-shm-usage",
+  "--disable-gpu",
+  "--no-first-run",
+  "--disable-extensions",
+  "--mute-audio",
+  "--no-default-browser-check",
+];
 
 async function incrementViewsML(io) {
   const productNames = Object.keys(urlsML);
@@ -23,122 +34,77 @@ async function incrementViewsML(io) {
 
     const productName = productNames[currentIndex];
     const url = urlsML[productName];
+
+    // Nunca tirar: un fallo no debe cortar el ciclo ni reintentar el mismo ítem en loop
     await visitUrl(io, url, productName);
     currentIndex++;
 
-    // Tiempo de espera entre visitas (más rápido en local)
-    await new Promise((resolve) =>
-      setTimeout(resolve, BROWSER_FULL_FLOW_TIMEOUT)
-    );
+    await new Promise((resolve) => setTimeout(resolve, PAUSE_BETWEEN_VISITS_MS));
   }
 }
 
 async function visitUrl(io, url, productName) {
   let browser;
 
-  // Promise que se resolverá cuando la visita haya terminado
-  const visitPromise = new Promise(async (resolve, reject) => {
-    try {
-      console.log(`🌐 Abriendo navegador para: ${url}`);
-      
-      browser = await puppeteer.launch({
-        headless: "new", // Usar el nuevo modo headless
-        protocolTimeout: 60000, // Aumentar timeout del protocolo
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
-          "--no-first-run",
-          "--no-zygote",
-          "--single-process",
-          "--disable-extensions",
-          "--disable-background-timer-throttling",
-          "--disable-backgrounding-occluded-windows",
-          "--disable-renderer-backgrounding",
-          "--disable-features=TranslateUI",
-          "--disable-ipc-flooding-protection",
-          "--memory-pressure-off",
-          "--max_old_space_size=512",
-          "--disable-web-security",
-          "--disable-default-apps",
-          "--disable-sync",
-          "--disable-translate",
-          "--hide-scrollbars",
-          "--mute-audio",
-          "--no-default-browser-check",
-          "--no-pings",
-          "--disable-hang-monitor",
-          "--disable-prompt-on-repost",
-          "--disable-client-side-phishing-detection",
-          "--disable-component-extensions-with-background-pages",
-          "--disable-domain-reliability",
-          "--disable-print-preview",
-          "--disable-sync-preferences",
-          "--disable-threaded-animation",
-          "--disable-threaded-scrolling",
-          "--disable-web-resources"
-        ],
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      });
+  try {
+    console.log(`🌐 Abriendo navegador para: ${url}`);
 
-      const page = await browser.newPage();
-
-      // Configuración básica sin request interception
-      await page.setCacheEnabled(false);
-      await page.setUserAgent(getRandomUserAgent());
-      await page.setViewport({ width: 1366, height: 768 });
-
-      console.log(`🌐 Navegando a: ${url}`);
-      
-      // Establecer un timeout para la navegación
-      const response = await page.goto(url, {
-        waitUntil: "domcontentloaded",
-        timeout: BROWSER_OPEN_TIMEOUT,
-      });
-
-      // Verificar si la respuesta es válida
-      if (!response || !response.ok()) {
-        throw new Error(`Error al cargar la URL: ${url}`);
-      }
-
-      // Simulación básica
-      await page.waitForTimeout(2000);
-      await page.evaluate(() => {
-        window.scrollTo(0, Math.random() * 500);
-      });
-      await page.waitForTimeout(1000);
-
-      logStatus(currentIndex + 1, "abierta", productName);
-      await emitStatus(io, currentIndex + 1, "ok", productName, url);
-      console.log(`✅ Visita exitosa - Status: ${response.status()}`);
-      resolve();
-    } catch (error) {
-      console.error(`❌ Error visitando la URL ${url}:`, error);
-      logStatus(currentIndex + 1, "fallida", productName, error);
-      await emitStatus(io, currentIndex + 1, "fail", productName, url);
-      reject(error);
-    } finally {
-      if (browser) {
-        try {
-          await browser.close();
-          logStatus(currentIndex + 1, "cerrada", productName);
-          console.log(`🔒 Navegador cerrado`);
-        } catch (closeError) {
-          console.log(`⚠️ Error al cerrar navegador:`, closeError.message);
-        }
-      }
-      console.log("----------------------------------------------------------------");
+    const executablePath = resolveBrowserExecutablePath();
+    if (executablePath) {
+      console.log(`🧭 Browser: ${executablePath}`);
     }
-  });
 
-  // Timeout que rechaza la promesa si se queda colgada
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error(`Timeout al visitar la URL: ${url}`)), VISIT_TIMEOUT)
-  );
+    browser = await puppeteer.launch({
+      headless: true,
+      protocolTimeout: 60000,
+      args: LAUNCH_ARGS,
+      executablePath,
+      ignoreDefaultArgs: ["--enable-automation"],
+    });
 
-  // Ejecutar ambas promesas y manejar el resultado
-  await Promise.race([visitPromise, timeoutPromise]);
+    const page = await browser.newPage();
+    await page.setCacheEnabled(false);
+    await page.setUserAgent(getRandomUserAgent());
+    await page.setViewport({ width: 1366, height: 768 });
+    page.setDefaultNavigationTimeout(NAV_TIMEOUT_MS);
+
+    console.log(`🌐 Navegando a: ${url}`);
+    const response = await page.goto(url, {
+      waitUntil: "domcontentloaded",
+      timeout: NAV_TIMEOUT_MS,
+    });
+
+    if (!response) {
+      throw new Error(`Sin respuesta al cargar: ${url}`);
+    }
+
+    // ML a veces responde 4xx/5xx; igual contamos carga si hubo response
+    await new Promise((r) => setTimeout(r, STAY_ON_PAGE_MS));
+    try {
+      await page.evaluate(() => window.scrollTo(0, Math.random() * 500));
+    } catch {
+      // scroll opcional si el frame ya no está
+    }
+
+    logStatus(currentIndex + 1, "abierta", productName);
+    await emitStatus(io, currentIndex + 1, "ok", productName, url);
+    console.log(`✅ Visita exitosa - Status: ${response.status()}`);
+  } catch (error) {
+    console.error(`❌ Error visitando la URL ${url}:`, error.message);
+    logStatus(currentIndex + 1, "fallida", productName, error);
+    await emitStatus(io, currentIndex + 1, "fail", productName, url, error?.message);
+  } finally {
+    if (browser) {
+      try {
+        await browser.close();
+        logStatus(currentIndex + 1, "cerrada", productName);
+        console.log(`🔒 Navegador cerrado`);
+      } catch (closeError) {
+        console.log(`⚠️ Error al cerrar navegador:`, closeError.message);
+      }
+    }
+    console.log("----------------------------------------------------------------");
+  }
 }
 
 export { incrementViewsML };

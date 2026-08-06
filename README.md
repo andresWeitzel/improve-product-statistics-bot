@@ -11,6 +11,50 @@ npm run dev
 
 Esto levanta el servidor en http://localhost:9008.
 
+## 🐳 Docker (recomendado en Windows)
+
+Mismo flujo que Atlas UX/UI Platform: Docker Desktop + script de carga inicial.
+
+### Orden obligatorio
+
+```text
+1) Arrancar Docker Desktop  -->  esperar "Engine running"
+2) Carga inicial            -->  Start-Bot-Docker (.bat / .ps1)
+                                 = build imagen + up -d contenedor
+3) Control diario           -->  Start / Stop del contenedor en Docker Desktop
+```
+
+### Carga inicial / subir cambios
+
+**Opción A — doble clic:** `scripts\Start-Bot-Docker.bat`  
+**Opción B:** `.\scripts\Start-Bot-Docker.ps1`  
+**Opción C:** `npm run docker:up`
+
+Crea / actualiza:
+
+1. Imagen `improve-product-statistics-bot:local`
+2. Contenedor `improve-product-statistics-bot` en **Running**
+3. UI en http://localhost:9008
+
+**No hace falta** borrar el contenedor a mano. Al re-ejecutar el `.bat`:
+
+- Rebuild de la imagen (código nuevo)
+- `up -d --force-recreate` recrea el contenedor con la imagen nueva
+
+| Cambio | Qué correr |
+|--------|------------|
+| Código (`src/`, `public/`, Dockerfile, …) | `.bat` completo otra vez |
+| Solo Start/Stop sin cambios | Docker Desktop → Start / Stop |
+| Estado atascado | `.\scripts\Start-Bot-Docker.ps1 -Clean` luego el `.bat` |
+
+### Flags del script
+
+| Flag | Efecto |
+|------|--------|
+| (none) | Build + `up -d` |
+| `-SkipStart` | Solo build (no arranca contenedor) |
+| `-Clean` | `compose down` antes de build/start |
+
 ## 🚀 Deploy en Render
 
 ### Configuración Automática (Recomendado)
@@ -42,13 +86,13 @@ PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 ## 📊 Diferencias entre Entornos
 
-| Característica | Local | Producción (Render) |
-|----------------|-------|---------------------|
-| **Velocidad** | Rápida (2s entre visitas) | Lenta (5s entre visitas) |
-| **Memoria** | Sin límites | 512MB limitada |
-| **Timeouts** | 45s | 25s |
-| **Simulación** | Completa (scroll, JS) | Mínima (solo carga) |
-| **Costo** | Gratis | Gratis (plan básico) |
+| Característica | Local (`npm run dev`) | Docker | Producción (Render) |
+|----------------|----------------------|--------|---------------------|
+| **Velocidad** | Rápida (2s entre visitas) | Producción (5s) | Lenta (5s entre visitas) |
+| **Memoria** | Sin límites | Contenedor local | 512MB limitada |
+| **Timeouts** | 45s | Prod | 25s |
+| **Simulación** | Completa (scroll, JS) | Prod | Mínima (solo carga) |
+| **Costo** | Gratis | Gratis (local) | Gratis (plan básico) |
 
 ## ⚠️ Notas Importantes para Render
 
@@ -59,7 +103,17 @@ PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 ## 🔧 Solución de Problemas
 
+### Docker
+
+| Síntoma | Qué hacer |
+|---------|-----------|
+| Engine not ready | Abrí Docker Desktop y esperá **Engine running**, luego el `.bat` |
+| Contenedor no arranca | `.\scripts\Start-Bot-Docker.ps1 -Clean` y volvé a correr el `.bat` |
+| Puppeteer / Chromium | La imagen usa Chromium del sistema (`PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium`) |
+| Puerto ocupado | Liberá el `9008` o cambiá el mapeo en `docker-compose.yml` |
+
 ### Render
+
 Si tienes problemas con Puppeteer en Render:
 
 1. **Error de memoria**: Reduce el número de pestañas simultáneas
@@ -69,7 +123,6 @@ Si tienes problemas con Puppeteer en Render:
 ## 🎯 Uso Recomendado
 
 1. **Desarrollo**: Usa `npm run dev` para testing local
-2. **Producción**: Usa Render con plan gratuito para pocos productos
-3. **Escalado**: Considera plan pago de Render para más productos
-
-¡Listo! Ahora tienes una configuración optimizada para Render con Puppeteer funcionando correctamente. 
+2. **Docker local**: Doble clic en `scripts\Start-Bot-Docker.bat` (con Desktop abierto)
+3. **Producción cloud**: Usa Render con plan gratuito para pocos productos
+4. **Escalado**: Considera plan pago de Render para más productos

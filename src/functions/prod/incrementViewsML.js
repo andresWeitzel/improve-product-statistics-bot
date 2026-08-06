@@ -6,6 +6,7 @@ import {
 } from "../../utils/conversions.js";
 import { logStatus } from "../../utils/logging.js";
 import { emitStatus } from "../../utils/socket.js";
+import { resolveBrowserExecutablePath } from "../../utils/browserPath.js";
 
 let currentIndex = 0;
 let visitCounter = 0;
@@ -74,7 +75,7 @@ async function visitUrl(io, url, productName) {
           "--disable-images",
           "--disable-css"
         ],
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+        executablePath: resolveBrowserExecutablePath(),
       });
 
       const page = await browser.newPage();
@@ -120,7 +121,7 @@ async function visitUrl(io, url, productName) {
     } catch (error) {
       console.error(`❌ Error visitando ${productName}:`, error.message);
       logStatus(currentIndex + 1, "fallida", productName, error);
-      await emitStatus(io, currentIndex + 1, "fail", productName, url);
+      await emitStatus(io, currentIndex + 1, "fail", productName, url, error?.message);
       reject(error);
     } finally {
       if (browser) {
