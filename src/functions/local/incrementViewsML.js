@@ -1,9 +1,8 @@
 /**
- * Compat local: el server usa src/bots/visitRunner.js (ML + FB en paralelo).
- * Estos exports sirven si querés correr un bot aislado.
+ * Compat local: el server usa src/platforms (ML + FB).
+ * Este wrapper queda por si algún script viejo lo importa.
  */
-import { platforms } from "../../const/platforms.js";
-import { createVisitBot } from "../../bots/visitRunner.js";
+import { platforms, createVisitBot } from "../../platforms/index.js";
 
 export { createVisitBot };
 

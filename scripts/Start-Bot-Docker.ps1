@@ -129,6 +129,21 @@ Write-Host "  IMAGE     : $ImageName"
 Write-Host "  CONTAINER : $ContainerName  (control Start/Stop in Docker Desktop)"
 Write-Host "  UI        : http://localhost:9008"
 Write-Host "  HEALTH    : http://localhost:9008/health"
+Write-Host "  MAIL      : loaded from .env (midnight AR report if MAIL_ENABLED=true)"
+Write-Host ""
+
+$envPath = Join-Path $RepoRoot ".env"
+if (-not (Test-Path $envPath)) {
+  Write-Host "WARNING: No .env found. Copy .env.example to .env and set MAIL_* for Gmail." -ForegroundColor Yellow
+} else {
+  $mailOn = Select-String -Path $envPath -Pattern '^\s*MAIL_ENABLED\s*=\s*true' -Quiet
+  if ($mailOn) {
+    Write-Host "MAIL_ENABLED=true detected — daily report scheduled at 00:00 AR inside the container." -ForegroundColor Green
+  } else {
+    Write-Host "MAIL_ENABLED is not true in .env — bot runs, but no midnight email." -ForegroundColor Yellow
+  }
+}
+
 Write-Host ""
 Write-Host "On re-run (app updates):"
 Write-Host "  - No need to delete the container by hand"
@@ -136,9 +151,12 @@ Write-Host "  - Build replaces the IMAGE; up --force-recreate refreshes the CONT
 Write-Host ""
 Write-Host "How control works:"
 Write-Host "  - Docker Desktop > container '$ContainerName' > Start / Stop"
-Write-Host "  - If the container is Stopped, the bot is offline until you Start it again"
+Write-Host "  - Start  = bot online (FB visits + midnight mail)"
+Write-Host "  - Stop   = bot offline"
+Write-Host "  - restart: unless-stopped → if Docker Desktop is running, container comes back after reboot"
 Write-Host ""
 Write-Host "Next:"
 Write-Host "  1. Open http://localhost:9008"
 Write-Host "  2. App code change: run the .bat again (build + recreate)"
 Write-Host "  3. Stuck state: .\scripts\Start-Bot-Docker.ps1 -Clean"
+Write-Host "  4. Manual mail test (host): npm run report:send"

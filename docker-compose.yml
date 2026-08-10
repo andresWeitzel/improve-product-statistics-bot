@@ -8,13 +8,18 @@ services:
     container_name: improve-product-statistics-bot
     ports:
       - "9008:9008"
+    # Gmail + reporte diario (MAIL_*, REPORT_PLATFORM, etc.)
+    env_file:
+      - path: .env
+        required: false
     environment:
       NODE_ENV: production
       PORT: "9008"
+      TZ: America/Argentina/Buenos_Aires
       PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
       PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
     volumes:
-      # Persist visit history across rebuilds/recreates
+      # Persist visit history + browser profiles across rebuilds
       - ./data:/app/data
     # Chromium needs extra shared memory; avoid /dev/shm crashes
     shm_size: "256mb"

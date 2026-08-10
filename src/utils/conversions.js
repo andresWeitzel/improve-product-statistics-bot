@@ -1,5 +1,4 @@
-// Importing userAgents using an ES module import
-import { userAgents } from "../const/web.js";
+import { userAgents } from "../const/userAgents.js";
 
 function getNameFromUrlML(url) {
   const urlSplit = url.split("/").pop();

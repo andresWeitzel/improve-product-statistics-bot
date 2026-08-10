@@ -15,9 +15,8 @@ import {
 } from "../src/db/memoryDb.js";
 import {
   sendDailyActivityReport,
-  isDailyReportEnabled,
   isMailConfigured,
-} from "../src/reports/dailyEmailReport.js";
+} from "../src/notifications/index.js";
 
 function parseArgs(argv) {
   const opts = {

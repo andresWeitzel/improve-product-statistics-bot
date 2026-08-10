@@ -16,8 +16,8 @@ import { createVisitBot } from "./bots/visitRunner.js";
 import {
   sendDailyActivityReport,
   isDailyReportEnabled,
-} from "./reports/dailyEmailReport.js";
-import { startDailyReportScheduler } from "./reports/scheduleDailyReport.js";
+  startDailyReportScheduler,
+} from "./notifications/index.js";
 
 const app = express();
 const server = http.createServer(app);
