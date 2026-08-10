@@ -1,10 +1,8 @@
-/** User-agents actuales compartidos. */
+/** User-agents desktop Chromium/Edge (coherentes con el browser local). */
 export const userAgents = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
-  "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
 ];
 
 /**
@@ -23,13 +21,13 @@ export const platforms = {
       "Multigimnasio Everlast":
         "https://www.mercadolibre.com.ar/multigimnasio-everlast-liquidacion/up/MLAU2889015601",
     },
-    // Tunning ML (ajustable con el tiempo)
-    // domcontentloaded: ML hace redirects; "load" falla mucho / response null
-    pauseBetweenMs: 10000,
-    pauseJitterMs: 4000,
+    // ML: browser real minimizado (sesión caliente). No headless.
+    pauseBetweenMs: 20000,
+    pauseJitterMs: 10000,
     stayOnPageMs: 10000,
     navTimeoutMs: 60000,
     waitUntil: "domcontentloaded",
+    blockCooldownMs: 120000,
   },
 
   facebook: {

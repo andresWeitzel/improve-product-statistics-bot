@@ -1,8 +1,18 @@
-import puppeteer from "puppeteer";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { getRandomUserAgent } from "../utils/conversions.js";
 import { logStatus } from "../utils/logging.js";
 import { emitStatus } from "../utils/socket.js";
 import { resolveBrowserExecutablePath } from "../utils/browserPath.js";
+
+puppeteer.use(StealthPlugin());
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = path.resolve(__dirname, "../..");
+const PROFILES_DIR = path.join(ROOT_DIR, "data", "browser-profiles");
 
 const LAUNCH_ARGS = [
   "--no-sandbox",
@@ -13,11 +23,33 @@ const LAUNCH_ARGS = [
   "--mute-audio",
   "--no-default-browser-check",
   "--lang=es-AR",
+  "--disable-blink-features=AutomationControlled",
 ];
 
+/** UA coherente con el binario (evitar Firefox UA sobre Chromium). */
+function resolveUserAgent(executablePath) {
+  if (executablePath && /msedge/i.test(executablePath)) {
+    return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0";
+  }
+  if (executablePath && /chrome\.exe$/i.test(executablePath)) {
+    return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+  }
+  const ua = getRandomUserAgent();
+  if (/Firefox|Android|iPhone/i.test(ua)) {
+    return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+  }
+  return ua;
+}
+
+function profileDirFor(platformId) {
+  const dir = path.join(PROFILES_DIR, platformId);
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
 /**
- * Un solo Edge a la vez (ML+FB en paralelo saturaban launch/goto →
- * "Sin respuesta" / "Execution context was destroyed").
+ * Un solo browser a la vez (ML+FB en paralelo saturaban launch).
+ * La visita completa no debe bloquear > ~navTimeout + stay + pausas cortas.
  */
 let browserLock = Promise.resolve();
 function withBrowserLock(fn) {
@@ -34,7 +66,7 @@ function sleep(ms) {
 }
 
 function isNavRaceError(err) {
-  return /Execution context was destroyed|Target closed|Session closed|Navigating frame was detached|net::ERR_ABORTED/i.test(
+  return /Execution context was destroyed|Target closed|Session closed|Navigating frame was detached|net::ERR_ABORTED|Requesting main frame too early/i.test(
     err?.message || ""
   );
 }
@@ -53,7 +85,6 @@ function resolveUrlEntry(entry) {
   };
 }
 
-/** Cola 1:1 por producto (weight opcional, default 1 — trato uniforme). */
 function buildVisitQueue(urlsMap) {
   const queue = [];
   for (const [productName, entry] of Object.entries(urlsMap || {})) {
@@ -69,11 +100,12 @@ async function softenAutomation(page) {
   await page.evaluateOnNewDocument(() => {
     Object.defineProperty(navigator, "webdriver", { get: () => undefined });
     Object.defineProperty(navigator, "languages", {
-      get: () => ["es-AR", "es", "en"],
+      get: () => ["es-AR", "es", "en-US", "en"],
     });
     Object.defineProperty(navigator, "plugins", {
       get: () => [1, 2, 3, 4, 5],
     });
+    window.chrome = window.chrome || { runtime: {} };
   });
 }
 
@@ -99,7 +131,7 @@ async function dismissCookieBanner(page, platformId) {
       const btn = await page.$(sel);
       if (btn) {
         await btn.click();
-        await sleep(500);
+        await sleep(400);
         return;
       }
     } catch {
@@ -133,17 +165,17 @@ async function simulateHumanBrowse(page) {
       }, 0.15 + i * 0.18);
     } catch (err) {
       if (isNavRaceError(err)) {
-        await sleep(800);
+        await sleep(500);
         continue;
       }
       throw err;
     }
-    await sleep(700 + Math.random() * 900);
+    await sleep(600 + Math.random() * 700);
   }
 
   try {
     await page.mouse.move(200 + Math.random() * 400, 200 + Math.random() * 300);
-    await sleep(300);
+    await sleep(250);
   } catch {
     // ignore
   }
@@ -158,8 +190,7 @@ async function readPageUrl(page) {
 }
 
 /**
- * goto resiliente: ML redirige y a menudo response=null / context destroyed.
- * No usamos waitForNavigation post-goto (compite con redirects de ML).
+ * goto resiliente: ML/FB a veces response=null por redirects.
  */
 async function safeGoto(page, url, { waitUntil, timeout, referer } = {}) {
   let lastError = null;
@@ -177,11 +208,10 @@ async function safeGoto(page, url, { waitUntil, timeout, referer } = {}) {
         response = await page.goto(url, opts);
       } catch (err) {
         if (!isNavRaceError(err)) throw err;
-        // Redirect mid-goto: esperar a que asiente y seguir
-        await sleep(2000);
+        await sleep(1500);
       }
 
-      await sleep(2000);
+      await sleep(1000);
 
       const finalUrl = await readPageUrl(page);
       if (response) {
@@ -200,7 +230,7 @@ async function safeGoto(page, url, { waitUntil, timeout, referer } = {}) {
     } catch (err) {
       lastError = err;
       if (attempt < 3) {
-        await sleep(1500 * attempt);
+        await sleep(1200 * attempt);
         continue;
       }
     }
@@ -214,20 +244,16 @@ async function safeGoto(page, url, { waitUntil, timeout, referer } = {}) {
   throw lastError || new Error(`Sin respuesta al cargar: ${url}`);
 }
 
-/**
- * FB Marketplace cuenta mejor “clics” cuando la visita llega como desde el feed,
- * no solo con deep-link directo al item.
- */
 async function openFacebookListing(page, itemUrl, navTimeoutMs) {
   const hubUrl = "https://www.facebook.com/marketplace/?ref=app_tab";
 
   try {
     await page.goto(hubUrl, {
       waitUntil: "domcontentloaded",
-      timeout: Math.min(navTimeoutMs, 45000),
+      timeout: Math.min(navTimeoutMs, 40000),
     });
     await dismissCookieBanner(page, "facebook");
-    await sleep(1500 + Math.random() * 1500);
+    await sleep(1000 + Math.random() * 1000);
   } catch (err) {
     console.log(`[FB] ⚠️ Hub Marketplace: ${err.message} — sigo al item`);
   }
@@ -245,11 +271,10 @@ async function probeFacebookListing(page) {
     const title = document.title || "";
     return {
       title,
+      href: location.href || "",
       hasPrice: /\$\s?\d|ARS\s*\d|USD\s*\d|\d[\d.]*\s*(ARS|USD)/i.test(text),
       hasMessage:
-        /enviar mensaje|message seller|enviar un mensaje|message/i.test(text),
-      hasMarketplaceTitle: /facebook\s*marketplace/i.test(title),
-      hasListingUrl: /marketplace\/item\//i.test(location.href),
+        /enviar mensaje|message seller|enviar un mensaje|\bmessage\b/i.test(text),
       hasUnavailable:
         /no disponible|no longer available|contenido no disponible|esta publicaci[oó]n no est/i.test(
           text
@@ -259,10 +284,17 @@ async function probeFacebookListing(page) {
   });
 }
 
-/**
- * FB a menudo setea el <title> del listing antes de pintar precio/CTA.
- * Reintentamos y aceptamos título Marketplace + URL de item como OK.
- */
+function looksLikeFbMarketplaceListing(url, title) {
+  const onItem = /marketplace\/item\//i.test(url || "");
+  const titleOk =
+    /marketplace/i.test(title || "") ||
+    (Boolean(title) &&
+      title.length > 20 &&
+      !/^facebook$/i.test(title.trim()) &&
+      !/log\s?in|iniciar sesi/i.test(title));
+  return onItem && titleOk;
+}
+
 async function assertFacebookListingLoaded(page, productName) {
   const finalUrl = await readPageUrl(page);
   if (/\/login|checkpoint/i.test(finalUrl)) {
@@ -270,34 +302,44 @@ async function assertFacebookListingLoaded(page, productName) {
   }
 
   let check = null;
-  for (let attempt = 1; attempt <= 4; attempt++) {
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    let pageTitle = "";
+    let pageHref = finalUrl;
     try {
+      pageTitle = await page.title();
+      pageHref = (await readPageUrl(page)) || finalUrl;
       check = await probeFacebookListing(page);
     } catch (err) {
-      if (isNavRaceError(err) && attempt < 4) {
-        await sleep(1200);
+      if (isNavRaceError(err) && attempt < 5) {
+        await sleep(800);
         continue;
       }
       throw err;
     }
 
-    if (check.hasUnavailable) {
+    const title = check?.title || pageTitle || "";
+    const href = check?.href || pageHref || "";
+
+    if (check?.hasUnavailable) {
       throw new Error(`Publicación no disponible: ${productName}`);
     }
 
     const usable =
-      check.hasPrice ||
-      check.hasMessage ||
-      (check.hasMarketplaceTitle && check.hasListingUrl) ||
-      (check.hasListingUrl &&
-        check.title &&
-        !/^facebook$/i.test(check.title.trim()));
+      check?.hasPrice ||
+      check?.hasMessage ||
+      looksLikeFbMarketplaceListing(href, title) ||
+      looksLikeFbMarketplaceListing(pageHref, pageTitle);
 
     if (usable) {
-      return check;
+      return {
+        ...check,
+        title,
+        hasMarketplaceTitle: /marketplace/i.test(title),
+        hasListingUrl: /marketplace\/item\//i.test(href || pageHref),
+      };
     }
 
-    await sleep(1200 + attempt * 400);
+    await sleep(800 + attempt * 300);
   }
 
   throw new Error(
@@ -310,7 +352,7 @@ async function interactFacebookListing(page) {
     const img = await page.$('img[src*="scontent"], img[alt]');
     if (img) {
       await img.click({ delay: 40 }).catch(() => {});
-      await sleep(800);
+      await sleep(600);
     }
   } catch {
     // ignore
@@ -320,167 +362,348 @@ async function interactFacebookListing(page) {
 
   try {
     await page.mouse.click(400 + Math.random() * 200, 320 + Math.random() * 120);
-    await sleep(500);
+    await sleep(400);
   } catch {
     // ignore
   }
 }
 
+function isMercadoLibreBlockedUrl(url) {
+  return /account-verification|captcha|challenge|security-check|\/jms\/|\/gz\/account/i.test(
+    url || ""
+  );
+}
+
+/** Directo al producto (menos hits a ML que home→item). */
+async function openMercadoLibreListing(page, itemUrl, navTimeoutMs) {
+  return safeGoto(page, itemUrl, {
+    waitUntil: "domcontentloaded",
+    timeout: navTimeoutMs,
+    referer: "https://www.google.com.ar/",
+  });
+}
+
+function resolveHeadless(platformId) {
+  if (process.env.HEADLESS === "1") return "new";
+  if (process.env.HEADLESS === "0") return false;
+  // ML: browser real (sesión caliente). FB: headless.
+  if (platformId === "mercadolibre") return false;
+  return "new";
+}
+
+/** Minimizar / restaurar ventana (Chrome CDP). */
+async function setWindowMinimized(page, minimized) {
+  try {
+    const client = await page.target().createCDPSession();
+    const { windowId } = await client.send("Browser.getWindowForTarget");
+    await client.send("Browser.setWindowBounds", {
+      windowId,
+      bounds: { windowState: minimized ? "minimized" : "normal" },
+    });
+  } catch (err) {
+    console.log(`[ML] ⚠️ Ventana: ${err.message}`);
+  }
+}
+
+/**
+ * Si ML manda a verification:
+ * - headed: restaura ventana un rato para completar challenge (sesión caliente)
+ * - luego vuelve a minimizar
+ */
+async function ensureMercadoLibreProduct(page, originalUrl, navTimeoutMs, { headed }) {
+  let finalUrl = await readPageUrl(page);
+
+  if (!isMercadoLibreBlockedUrl(finalUrl)) {
+    return finalUrl;
+  }
+
+  console.log(`[ML] ⚠️ Challenge/bloqueo: ${finalUrl}`);
+
+  if (headed) {
+    console.log(
+      `[ML] 👤 Restaurando ventana 60s — completá el challenge si hace falta (barra de tareas).`
+    );
+    await setWindowMinimized(page, false);
+    const deadline = Date.now() + 60000;
+    while (Date.now() < deadline) {
+      await sleep(2000);
+      finalUrl = await readPageUrl(page);
+      if (!isMercadoLibreBlockedUrl(finalUrl)) {
+        console.log(`[ML] ✅ Challenge OK → ${finalUrl}`);
+        await setWindowMinimized(page, true);
+        return finalUrl;
+      }
+      // soft click continuar si existe
+      try {
+        await page.evaluate(() => {
+          const buttons = [
+            ...document.querySelectorAll("button, a, input[type=submit]"),
+          ];
+          const btn = buttons.find((b) =>
+            /continuar|verificar|soy humano|entendido/i.test(
+              (b.textContent || b.value || "").trim()
+            )
+          );
+          btn?.click();
+        });
+      } catch {
+        // ignore
+      }
+    }
+    await setWindowMinimized(page, true);
+  }
+
+  try {
+    const go = new URL(finalUrl).searchParams.get("go");
+    if (go) {
+      const target = decodeURIComponent(go);
+      console.log(`[ML] ↪️ Retry go=: ${target}`);
+      await safeGoto(page, target, {
+        waitUntil: "domcontentloaded",
+        timeout: Math.min(navTimeoutMs, 40000),
+      });
+      finalUrl = await readPageUrl(page);
+    }
+  } catch (err) {
+    console.log(`[ML] ⚠️ go= falló: ${err.message}`);
+  }
+
+  if (isMercadoLibreBlockedUrl(finalUrl)) {
+    throw new Error(`ML bloqueó la visita (verification/captcha): ${finalUrl}`);
+  }
+
+  return finalUrl;
+}
+
+/** Sesión ML persistente (mismo perfil + misma ventana minimizada). */
+const mlSession = {
+  browser: null,
+  page: null,
+  blockedUntil: 0,
+  consecutiveBlocks: 0,
+};
+
+async function closeMlSession() {
+  if (mlSession.browser) {
+    try {
+      await mlSession.browser.close();
+    } catch {
+      // ignore
+    }
+  }
+  mlSession.browser = null;
+  mlSession.page = null;
+}
+
+async function getMercadoLibrePage(platform) {
+  if (mlSession.browser && mlSession.page) {
+    try {
+      await mlSession.page.evaluate(() => true);
+      return mlSession.page;
+    } catch {
+      await closeMlSession();
+    }
+  }
+
+  const executablePath = resolveBrowserExecutablePath({ preferChrome: true });
+  if (executablePath) {
+    console.log(`[ML] 🧭 Browser: ${executablePath}`);
+  }
+  console.log(`[ML] 👁️ Modo: ventana real minimizada (sesión caliente)`);
+
+  const userDataDir = profileDirFor("mercadolibre");
+  console.log(`[ML] 📁 Profile: ${userDataDir}`);
+
+  const browser = await puppeteer.launch({
+    headless: false,
+    protocolTimeout: 120000,
+    executablePath,
+    userDataDir,
+    ignoreDefaultArgs: ["--enable-automation"],
+    defaultViewport: { width: 1366, height: 768, deviceScaleFactor: 1 },
+    args: [
+      ...LAUNCH_ARGS,
+      "--start-minimized",
+      "--window-position=-2400,-2400",
+      "--window-size=1366,768",
+    ],
+  });
+
+  await sleep(500);
+  const page = await browser.newPage();
+  await softenAutomation(page);
+  await page.setExtraHTTPHeaders({
+    "Accept-Language": "es-AR,es;q=0.9,en;q=0.8",
+  });
+  await page.setUserAgent(resolveUserAgent(executablePath));
+  page.setDefaultNavigationTimeout(platform.navTimeoutMs);
+
+  await setWindowMinimized(page, true);
+
+  mlSession.browser = browser;
+  mlSession.page = page;
+  return page;
+}
+
 /**
  * Loop infinito de visitas para UNA plataforma (ML o FB).
- * Los browsers se serializan con withBrowserLock (no dos Edge a la vez).
+ * ML: browser real minimizado + perfil persistente (sesión caliente).
+ * FB: headless como siempre.
  */
 export function createVisitBot(platform) {
   let currentIndex = 0;
   let visitCounter = 0;
 
+  async function visitMercadoLibre(io, url, productName) {
+    const tag = `[ML]`;
+
+    if (Date.now() < mlSession.blockedUntil) {
+      const waitSec = Math.ceil((mlSession.blockedUntil - Date.now()) / 1000);
+      console.log(`${tag} ⏸️ Cooldown verification (${waitSec}s) — salteo ${productName}`);
+      return;
+    }
+
+    try {
+      console.log(`${tag} 🌐 Abriendo: ${productName}`);
+      console.log(`${tag} 🔗 ${url}`);
+
+      const page = await getMercadoLibrePage(platform);
+      await setWindowMinimized(page, true);
+
+      const nav = await openMercadoLibreListing(page, url, platform.navTimeoutMs);
+      const status = nav.status;
+      console.log(`${tag} 📍 Landed: ${nav.finalUrl} (HTTP ${status})`);
+
+      await dismissCookieBanner(page, "mercadolibre");
+
+      const finalUrl = await ensureMercadoLibreProduct(
+        page,
+        url,
+        platform.navTimeoutMs,
+        { headed: true }
+      );
+      console.log(`${tag} 🛒 Producto: ${finalUrl}`);
+      await simulateHumanBrowse(page);
+      await sleep(platform.stayOnPageMs);
+
+      mlSession.consecutiveBlocks = 0;
+
+      logStatus(currentIndex + 1, "abierta", `ML:${productName}`);
+      await emitStatus(io, currentIndex + 1, "ok", productName, url, null, platform.id);
+      console.log(`${tag} ✅ OK - Status: ${status} - ${productName}`);
+    } catch (error) {
+      if (/verification|captcha|bloqueo/i.test(error.message || "")) {
+        mlSession.consecutiveBlocks += 1;
+        const cool =
+          (platform.blockCooldownMs || 120000) *
+          Math.min(mlSession.consecutiveBlocks, 4);
+        mlSession.blockedUntil = Date.now() + cool;
+        console.log(
+          `${tag} 🧊 Block #${mlSession.consecutiveBlocks} → cooldown ${Math.round(cool / 1000)}s`
+        );
+        console.log(
+          `${tag} 💡 Tip: en el próximo intento, si restaura la ventana, pasá el challenge una vez (no borramos el perfil).`
+        );
+      }
+
+      console.error(`${tag} ❌ Fail ${productName}:`, error.message);
+      logStatus(currentIndex + 1, "fallida", `ML:${productName}`, error);
+      await emitStatus(
+        io,
+        currentIndex + 1,
+        "fail",
+        productName,
+        url,
+        error?.message,
+        platform.id
+      );
+    } finally {
+      // No cerramos el browser ML — mantiene cookies / sesión caliente
+      console.log(`${tag} ----------------------------------------------------------------`);
+    }
+  }
+
+  async function visitFacebook(io, url, productName) {
+    let browser;
+    const tag = `[FB]`;
+
+    try {
+      console.log(`${tag} 🌐 Abriendo: ${productName}`);
+      console.log(`${tag} 🔗 ${url}`);
+
+      const executablePath = resolveBrowserExecutablePath();
+      if (executablePath) {
+        console.log(`${tag} 🧭 Browser: ${executablePath}`);
+      }
+
+      browser = await puppeteer.launch({
+        headless: resolveHeadless("facebook"),
+        protocolTimeout: 90000,
+        args: LAUNCH_ARGS,
+        executablePath,
+        ignoreDefaultArgs: ["--enable-automation"],
+        defaultViewport: {
+          width: 1366,
+          height: 768,
+          deviceScaleFactor: 1,
+        },
+      });
+
+      await sleep(300);
+      const page = await browser.newPage();
+      await softenAutomation(page);
+      await page.setExtraHTTPHeaders({
+        "Accept-Language": "es-AR,es;q=0.9,en;q=0.8",
+      });
+      await page.setUserAgent(resolveUserAgent(executablePath));
+      page.setDefaultNavigationTimeout(platform.navTimeoutMs);
+
+      const nav = await openFacebookListing(page, url, platform.navTimeoutMs);
+      const status = nav.status;
+      console.log(`${tag} 📍 Landed: ${nav.finalUrl} (HTTP ${status})`);
+
+      await dismissCookieBanner(page, "facebook");
+      const check = await assertFacebookListingLoaded(page, productName);
+      console.log(
+        `${tag} 📄 Listing OK · price=${check.hasPrice} msg=${check.hasMessage} mkt=${Boolean(check.hasMarketplaceTitle)} · ${page.url()}`
+      );
+      await interactFacebookListing(page);
+      await sleep(platform.stayOnPageMs);
+
+      logStatus(currentIndex + 1, "abierta", `FB:${productName}`);
+      await emitStatus(io, currentIndex + 1, "ok", productName, url, null, platform.id);
+      console.log(`${tag} ✅ OK - Status: ${status} - ${productName}`);
+    } catch (error) {
+      console.error(`${tag} ❌ Fail ${productName}:`, error.message);
+      logStatus(currentIndex + 1, "fallida", `FB:${productName}`, error);
+      await emitStatus(
+        io,
+        currentIndex + 1,
+        "fail",
+        productName,
+        url,
+        error?.message,
+        platform.id
+      );
+    } finally {
+      if (browser) {
+        try {
+          await browser.close();
+          console.log(`${tag} 🔒 Navegador cerrado`);
+        } catch (closeError) {
+          console.log(`${tag} ⚠️ Close error:`, closeError.message);
+        }
+      }
+      console.log(`${tag} ----------------------------------------------------------------`);
+    }
+  }
+
   async function visitUrl(io, url, productName) {
     return withBrowserLock(async () => {
-      let browser;
-      const tag = `[${platform.short}]`;
-
-      try {
-        console.log(`${tag} 🌐 Abriendo: ${productName}`);
-        console.log(`${tag} 🔗 ${url}`);
-
-        const executablePath = resolveBrowserExecutablePath();
-        if (executablePath) {
-          console.log(`${tag} 🧭 Browser: ${executablePath}`);
-        }
-
-        browser = await puppeteer.launch({
-          headless: "new",
-          protocolTimeout: 90000,
-          args: LAUNCH_ARGS,
-          executablePath,
-          ignoreDefaultArgs: ["--enable-automation"],
-        });
-
-        const page = await browser.newPage();
-        await softenAutomation(page);
-        await page.setExtraHTTPHeaders({
-          "Accept-Language": "es-AR,es;q=0.9,en;q=0.8",
-        });
-        await page.setUserAgent(getRandomUserAgent());
-        await page.setViewport({
-          width: 1366 + Math.floor(Math.random() * 120),
-          height: 768 + Math.floor(Math.random() * 80),
-          deviceScaleFactor: 1,
-        });
-        page.setDefaultNavigationTimeout(platform.navTimeoutMs);
-
-        let nav;
-        if (platform.id === "facebook") {
-          nav = await openFacebookListing(page, url, platform.navTimeoutMs);
-        } else {
-          nav = await safeGoto(page, url, {
-            waitUntil: platform.waitUntil || "domcontentloaded",
-            timeout: platform.navTimeoutMs,
-          });
-        }
-
-        const status = nav.status;
-        console.log(`${tag} 📍 Landed: ${nav.finalUrl} (HTTP ${status})`);
-
-        await dismissCookieBanner(page, platform.id);
-
-        if (platform.id === "facebook") {
-          const check = await assertFacebookListingLoaded(page, productName);
-        console.log(
-          `${tag} 📄 Listing OK · price=${check.hasPrice} msg=${check.hasMessage} title=${Boolean(check.hasMarketplaceTitle)} · ${page.url()}`
-        );
-          await interactFacebookListing(page);
-        } else {
-          const finalUrl = await readPageUrl(page);
-          if (/\/login|checkpoint/i.test(finalUrl)) {
-            throw new Error(`Redirigido a login/checkpoint: ${finalUrl}`);
-          }
-          await simulateHumanBrowse(page);
-        }
-
-        await sleep(platform.stayOnPageMs);
-
-        try {
-          await page.waitForNetworkIdle({ idleTime: 1000, timeout: 5000 });
-        } catch {
-          // ok
-        }
-
-        logStatus(currentIndex + 1, "abierta", `${platform.short}:${productName}`);
-        await emitStatus(
-          io,
-          currentIndex + 1,
-          "ok",
-          productName,
-          url,
-          null,
-          platform.id
-        );
-        console.log(`${tag} ✅ OK - Status: ${status} - ${productName}`);
-      } catch (error) {
-        // ML: si la carrera de redirect dejó la página en el producto, cuenta como vista
-        if (
-          platform.id === "mercadolibre" &&
-          isNavRaceError(error) &&
-          browser
-        ) {
-          try {
-            const pages = await browser.pages();
-            const u = pages[0] ? await readPageUrl(pages[0]) : "";
-            if (/mercadolibre\.com/i.test(u) && !/\/login|checkpoint/i.test(u)) {
-              console.log(
-                `${tag} ⚠️ Race de nav tolerada · ${u} — cuento como OK`
-              );
-              logStatus(
-                currentIndex + 1,
-                "abierta",
-                `${platform.short}:${productName}`
-              );
-              await emitStatus(
-                io,
-                currentIndex + 1,
-                "ok",
-                productName,
-                url,
-                null,
-                platform.id
-              );
-              console.log(`${tag} ✅ OK - Status: 200 - ${productName}`);
-              return;
-            }
-          } catch {
-            // caer al fail normal
-          }
-        }
-
-        console.error(`${tag} ❌ Fail ${productName}:`, error.message);
-        logStatus(
-          currentIndex + 1,
-          "fallida",
-          `${platform.short}:${productName}`,
-          error
-        );
-        await emitStatus(
-          io,
-          currentIndex + 1,
-          "fail",
-          productName,
-          url,
-          error?.message,
-          platform.id
-        );
-      } finally {
-        if (browser) {
-          try {
-            await browser.close();
-            console.log(`${tag} 🔒 Navegador cerrado`);
-          } catch (closeError) {
-            console.log(`${tag} ⚠️ Close error:`, closeError.message);
-          }
-        }
-        console.log(
-          `${tag} ----------------------------------------------------------------`
-        );
+      if (platform.id === "mercadolibre") {
+        await visitMercadoLibre(io, url, productName);
+      } else {
+        await visitFacebook(io, url, productName);
       }
     });
   }
@@ -495,6 +718,11 @@ export function createVisitBot(platform) {
     console.log(
       `[${platform.short}] 🚀 Bot activo · ${queue.length} links · ${platform.label}`
     );
+    if (platform.id === "mercadolibre") {
+      console.log(
+        `[ML] 💡 Sesión caliente: Chrome minimizado + perfil persistente. Si sale challenge, mirá la barra de tareas ~60s.`
+      );
+    }
 
     while (true) {
       if (currentIndex >= queue.length) {
@@ -512,5 +740,5 @@ export function createVisitBot(platform) {
     }
   }
 
-  return { run, platform };
+  return { run, platform, closeMlSession };
 }

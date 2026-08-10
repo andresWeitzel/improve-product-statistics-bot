@@ -49,11 +49,10 @@ const WINDOWS_CANDIDATES = [
 ].filter(Boolean);
 
 /**
- * Resolve a browser binary for Puppeteer.
- * Prefer env override, then system Edge/Chrome on Windows.
- * Returns undefined so Puppeteer can use its bundled Chrome when available.
+ * Prefer Chrome for ML (menos account-verification que Edge+Puppeteer).
+ * Prefer env override, then system browsers on Windows.
  */
-export function resolveBrowserExecutablePath() {
+export function resolveBrowserExecutablePath({ preferChrome = false } = {}) {
   if (process.env.PUPPETEER_EXECUTABLE_PATH) {
     const fromEnv = process.env.PUPPETEER_EXECUTABLE_PATH;
     if (fs.existsSync(fromEnv)) return fromEnv;
@@ -61,10 +60,18 @@ export function resolveBrowserExecutablePath() {
   }
 
   if (os.platform() === "win32") {
-    for (const candidate of WINDOWS_CANDIDATES) {
-      if (candidate && fs.existsSync(candidate)) {
-        return candidate;
-      }
+    const ordered = preferChrome
+      ? [
+          ...WINDOWS_CANDIDATES.filter((p) => /chrome\.exe$/i.test(p || "")),
+          ...WINDOWS_CANDIDATES.filter((p) => /msedge\.exe$/i.test(p || "")),
+        ]
+      : WINDOWS_CANDIDATES;
+
+    const seen = new Set();
+    for (const candidate of ordered) {
+      if (!candidate || seen.has(candidate)) continue;
+      seen.add(candidate);
+      if (fs.existsSync(candidate)) return candidate;
     }
   }
 
