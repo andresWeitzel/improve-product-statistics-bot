@@ -51,9 +51,9 @@
         <span class="metric__label">Éxito</span>
         <strong id="statRate" class="metric__value">0%</strong>
       </div>
-      <div class="metric metric--ml">
-        <span class="metric__label">ML</span>
-        <strong id="statMl" class="metric__value">0</strong>
+      <div class="metric metric--ml metric--disabled" id="metricMl" title="MercadoLibre próximamente">
+        <span class="metric__label">ML <em class="soon-tag">próx.</em></span>
+        <strong id="statMl" class="metric__value">—</strong>
       </div>
       <div class="metric metric--fb">
         <span class="metric__label">FB</span>
@@ -98,7 +98,16 @@
                 <span class="filter-label">Plataforma</span>
                 <div class="filters filters--full" role="group" aria-label="Plataforma">
                   <button type="button" class="filter is-active" data-platform="all">Todas</button>
-                  <button type="button" class="filter" data-platform="mercadolibre">MercadoLibre</button>
+                  <button
+                    type="button"
+                    class="filter filter--disabled"
+                    data-platform="mercadolibre"
+                    id="filterPlatformMl"
+                    disabled
+                    title="MercadoLibre próximamente"
+                  >
+                    MercadoLibre <span class="soon-tag">próx.</span>
+                  </button>
                   <button type="button" class="filter" data-platform="facebook">Facebook</button>
                 </div>
               </div>

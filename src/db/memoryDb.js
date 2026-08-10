@@ -9,6 +9,24 @@ const DB_FILE = path.join(DATA_DIR, "visits.json");
 const MAX_VISITS = 5000;
 const SAVE_DEBOUNCE_MS = 400;
 
+const AR_TZ = "America/Argentina/Buenos_Aires";
+
+/** YYYY-MM-DD en zona Argentina. */
+export function argentinaYmd(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: AR_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+export function addDaysToYmd(ymd, deltaDays) {
+  const [y, m, d] = String(ymd).split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + deltaDays));
+  return dt.toISOString().slice(0, 10);
+}
+
 /** Infere ML/FB desde URL o valor explícito. */
 export function resolvePlatform(platform, url = "") {
   const p = String(platform || "").toLowerCase().trim();
@@ -361,6 +379,66 @@ class MemoryDb {
     return this.visits.filter((v) => v.status === "fail").slice(0, limit);
   }
 
+  /**
+   * Reporte de un día calendario (YYYY-MM-DD) en zona Argentina.
+   * @param {{ dateYmd?: string, platform?: string }} opts
+   */
+  getDailyReport({ dateYmd = null, platform = "facebook" } = {}) {
+    const ymd = dateYmd || argentinaYmd(new Date());
+    const platformFilter = String(platform || "all").toLowerCase();
+
+    const dayVisits = this.visits.filter((v) => {
+      if (!v?.iso) return false;
+      if (argentinaYmd(new Date(v.iso)) !== ymd) return false;
+      if (platformFilter === "all") return true;
+      return resolvePlatform(v.platform, v.url) === platformFilter;
+    });
+
+    const ok = dayVisits.filter((v) => v.status === "ok").length;
+    const fail = dayVisits.filter((v) => v.status === "fail").length;
+    const total = dayVisits.length;
+    const successRate =
+      total === 0 ? 0 : Math.round((ok / total) * 1000) / 10;
+
+    const byProductMap = new Map();
+    for (const v of dayVisits) {
+      let row = byProductMap.get(v.product);
+      if (!row) {
+        row = { product: v.product, ok: 0, fail: 0, total: 0 };
+        byProductMap.set(v.product, row);
+      }
+      row.total += 1;
+      if (v.status === "ok") row.ok += 1;
+      else row.fail += 1;
+    }
+
+    const byProduct = [...byProductMap.values()].sort(
+      (a, b) => b.total - a.total || b.fail - a.fail
+    );
+
+    const recentFailures = dayVisits
+      .filter((v) => v.status === "fail")
+      .slice(0, 15)
+      .map((v) => ({
+        id: v.id,
+        product: v.product,
+        datetime: v.datetime,
+        error: v.error,
+        platform: resolvePlatform(v.platform, v.url),
+      }));
+
+    return {
+      dateYmd: ymd,
+      platform: platformFilter,
+      total,
+      ok,
+      fail,
+      successRate,
+      byProduct,
+      recentFailures,
+    };
+  }
+
   getStats() {
     const failures = this.getFailures({ limit: 20 });
     const successRate =
@@ -442,6 +520,10 @@ export function getHistory(opts) {
 
 export function getStats() {
   return memoryDb.getStats();
+}
+
+export function getDailyReport(opts) {
+  return memoryDb.getDailyReport(opts);
 }
 
 export function getDbMeta() {

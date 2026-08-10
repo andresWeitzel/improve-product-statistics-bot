@@ -187,6 +187,36 @@ h2 {
   color: #7aa2ff;
 }
 
+.metric--disabled {
+  opacity: 0.42;
+  filter: grayscale(0.85);
+  pointer-events: none;
+  user-select: none;
+}
+
+.soon-tag {
+  font-style: normal;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: var(--muted);
+  margin-left: 0.2rem;
+}
+
+.filter--disabled,
+.filter:disabled {
+  opacity: 0.4;
+  filter: grayscale(1);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.platform-pill--disabled {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
 .platform-pill {
   display: inline-flex;
   align-items: center;

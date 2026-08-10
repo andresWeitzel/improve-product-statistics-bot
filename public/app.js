@@ -16,6 +16,10 @@ const state = {
   searchTimer: null,
   productListKey: "",
   recentFailures: [],
+  platforms: {
+    mercadolibre: { enabled: false },
+    facebook: { enabled: true },
+  },
 };
 
 const els = {
@@ -37,6 +41,8 @@ const els = {
   statFail: document.getElementById("statFail"),
   statRate: document.getElementById("statRate"),
   statMl: document.getElementById("statMl"),
+  metricMl: document.getElementById("metricMl"),
+  filterPlatformMl: document.getElementById("filterPlatformMl"),
   statFb: document.getElementById("statFb"),
   failList: document.getElementById("failList"),
   lastFailMeta: document.getElementById("lastFailMeta"),
@@ -293,12 +299,64 @@ function populateProductFilter(products) {
     .join("");
 }
 
+function isMlEnabled() {
+  return Boolean(state.platforms?.mercadolibre?.enabled);
+}
+
+function applyPlatformAvailabilityUi() {
+  const mlOn = isMlEnabled();
+
+  if (els.metricMl) {
+    els.metricMl.classList.toggle("metric--disabled", !mlOn);
+    els.metricMl.title = mlOn ? "MercadoLibre" : "MercadoLibre próximamente";
+  }
+
+  if (els.filterPlatformMl) {
+    els.filterPlatformMl.disabled = !mlOn;
+    els.filterPlatformMl.classList.toggle("filter--disabled", !mlOn);
+    els.filterPlatformMl.title = mlOn
+      ? "Filtrar MercadoLibre"
+      : "MercadoLibre próximamente";
+  }
+
+  // Si ML está off y el filtro quedó en ML, volver a Facebook
+  if (!mlOn && state.platform === "mercadolibre") {
+    state.platform = "facebook";
+    document.querySelectorAll(".filter[data-platform]").forEach((b) => {
+      b.classList.toggle("is-active", b.dataset.platform === "facebook");
+    });
+    applyFiltersAndReload();
+  }
+}
+
+async function loadPlatforms() {
+  try {
+    const res = await fetch("/api/platforms");
+    if (!res.ok) return;
+    const list = await res.json();
+    const map = {};
+    for (const p of list || []) {
+      map[p.id] = p;
+    }
+    state.platforms = {
+      mercadolibre: map.mercadolibre || { enabled: false },
+      facebook: map.facebook || { enabled: true },
+    };
+    applyPlatformAvailabilityUi();
+  } catch (err) {
+    console.error("platforms:", err);
+    applyPlatformAvailabilityUi();
+  }
+}
+
 function platformLabel(platform) {
   return platform === "facebook" ? "FB" : "ML";
 }
 
 function platformClass(platform) {
-  return platform === "facebook" ? "platform-pill--fb" : "platform-pill--ml";
+  if (platform === "facebook") return "platform-pill--fb";
+  const disabled = !isMlEnabled() ? " platform-pill--disabled" : "";
+  return `platform-pill--ml${disabled}`;
 }
 
 function resolvePlatformClient(platform, url = "") {
@@ -361,7 +419,11 @@ function renderStats(stats) {
   els.statFail.textContent = String(stats.fail ?? 0);
   els.statRate.textContent = `${stats.successRate ?? 0}%`;
   if (els.statMl) {
-    els.statMl.textContent = String(stats.byPlatform?.mercadolibre?.total ?? 0);
+    if (!isMlEnabled()) {
+      els.statMl.textContent = "—";
+    } else {
+      els.statMl.textContent = String(stats.byPlatform?.mercadolibre?.total ?? 0);
+    }
   }
   if (els.statFb) {
     els.statFb.textContent = String(stats.byPlatform?.facebook?.total ?? 0);
@@ -375,7 +437,13 @@ function renderStats(stats) {
 
   populateProductFilter(stats.products || (stats.productStats || []).map((p) => p.product));
 
-  const failures = stats.recentFailures || [];
+  // No mostrar fails de ML en el panel si la plataforma está suprimida
+  let failures = stats.recentFailures || [];
+  if (!isMlEnabled()) {
+    failures = failures.filter(
+      (f) => resolvePlatformClient(f.platform, f.url) !== "mercadolibre"
+    );
+  }
   state.recentFailures = failures;
   if (els.copyFailsBtn) els.copyFailsBtn.disabled = !failures.length;
 
@@ -519,7 +587,7 @@ async function clearMemoryDb() {
 
 function resetFilters() {
   state.status = "all";
-  state.platform = "all";
+  state.platform = isMlEnabled() ? "all" : "facebook";
   state.range = "all";
   state.date = "";
   state.hourFrom = "";
@@ -532,7 +600,7 @@ function resetFilters() {
     b.classList.toggle("is-active", b.dataset.status === "all");
   });
   document.querySelectorAll(".filter[data-platform]").forEach((b) => {
-    b.classList.toggle("is-active", b.dataset.platform === "all");
+    b.classList.toggle("is-active", b.dataset.platform === state.platform);
   });
   setRangeActive("all");
   if (els.dateFilter) els.dateFilter.value = "";
@@ -600,6 +668,8 @@ document.querySelectorAll(".filter[data-status]").forEach((btn) => {
 
 document.querySelectorAll(".filter[data-platform]").forEach((btn) => {
   btn.addEventListener("click", () => {
+    if (btn.disabled || btn.classList.contains("filter--disabled")) return;
+    if (btn.dataset.platform === "mercadolibre" && !isMlEnabled()) return;
     document.querySelectorAll(".filter[data-platform]").forEach((b) => b.classList.remove("is-active"));
     btn.classList.add("is-active");
     state.platform = btn.dataset.platform;
@@ -677,9 +747,11 @@ els.next.addEventListener("click", () => {
 
 socket.on("connect", () => {
   setConnection("ok", "Conectado");
-  loadHistory();
-  loadStats();
-  loadActivityChart();
+  loadPlatforms().then(() => {
+    loadHistory();
+    loadStats();
+    loadActivityChart();
+  });
 });
 
 socket.on("disconnect", () => {
@@ -701,6 +773,15 @@ window.addEventListener("resize", () => {
 });
 
 fillHourSelects();
-loadHistory();
-loadStats();
-loadActivityChart();
+loadPlatforms().then(() => {
+  // Por defecto enfocamos FB mientras ML está off
+  if (!isMlEnabled() && state.platform === "all") {
+    state.platform = "facebook";
+    document.querySelectorAll(".filter[data-platform]").forEach((b) => {
+      b.classList.toggle("is-active", b.dataset.platform === "facebook");
+    });
+  }
+  loadHistory();
+  loadStats();
+  loadActivityChart();
+});

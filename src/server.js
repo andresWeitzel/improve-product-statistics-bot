@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import http from "http";
 import { Server as SocketIO } from "socket.io";
@@ -6,9 +7,17 @@ import {
   getStats,
   getDbMeta,
   clearDb,
+  getDailyReport,
+  argentinaYmd,
+  addDaysToYmd,
 } from "./db/memoryDb.js";
 import { platforms } from "./const/platforms.js";
 import { createVisitBot } from "./bots/visitRunner.js";
+import {
+  sendDailyActivityReport,
+  isDailyReportEnabled,
+} from "./reports/dailyEmailReport.js";
+import { startDailyReportScheduler } from "./reports/scheduleDailyReport.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -74,6 +83,37 @@ app.post("/api/db/clear", (_req, res) => {
   res.json({ cleared: true, meta });
 });
 
+/** Vista previa / envío de prueba del reporte diario (Gmail). */
+app.post("/api/reports/daily", async (req, res) => {
+  try {
+    const send = String(req.query.send || "") === "1";
+    const platform = req.query.platform || process.env.REPORT_PLATFORM || "facebook";
+    const dateYmd =
+      req.query.date ||
+      addDaysToYmd(argentinaYmd(new Date()), -1);
+
+    if (!send) {
+      const report = getDailyReport({ dateYmd, platform });
+      return res.json({
+        preview: true,
+        mailEnabled: isDailyReportEnabled(),
+        report,
+      });
+    }
+
+    const result = await sendDailyActivityReport({
+      dateYmd,
+      platform,
+      dryRun: false,
+      force: true,
+    });
+    res.json(result);
+  } catch (err) {
+    console.error("📧 /api/reports/daily:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 io.on("connection", (socket) => {
   console.log("🔌 Cliente conectado:", socket.id);
   socket.emit("stats", getStats());
@@ -106,15 +146,19 @@ const startServer = async () => {
       console.log(`✅ Servidor web en puerto ${PORT}`);
       console.log(`🌐 URL: http://localhost:${PORT}/`);
       console.log(`🧠 DB: http://localhost:${PORT}/api/db`);
+      startDailyReportScheduler();
     });
 
     setTimeout(async () => {
       const enabled = Object.values(platforms).filter((p) => p.enabled);
+      const disabled = Object.values(platforms).filter((p) => !p.enabled);
       console.log(`🔄 Lanzando ${enabled.length} bots en paralelo...`);
+      for (const p of disabled) {
+        console.log(`⏸️ ${p.label} deshabilitado (próximamente / no se visitan URLs)`);
+      }
       for (let i = 0; i < enabled.length; i++) {
         const platform = enabled[i];
         const bot = createVisitBot(platform);
-        // Escalonar arranque: 2 Edge a la vez saturan ML (response null / context destroyed)
         if (i > 0) {
           await new Promise((r) => setTimeout(r, 5000));
         }

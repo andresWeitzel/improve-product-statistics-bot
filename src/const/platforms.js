@@ -14,20 +14,22 @@ export const platforms = {
     id: "mercadolibre",
     label: "MercadoLibre",
     short: "ML",
-    enabled: true,
+    // Reactivar con enabled: true cuando haya proxy / baje el bloqueo anti-bot.
+    // Mientras tanto el monitor muestra ML en gris (próximamente) y no lanza el bot.
+    enabled: false,
     urls: {
       "Cama cucheta":
         "https://www.mercadolibre.com.ar/cama-cucheta-con-escritorio-mueble-organizador-y-placard/up/MLAU4595842089",
       "Multigimnasio Everlast":
         "https://www.mercadolibre.com.ar/multigimnasio-everlast-liquidacion/up/MLAU2889015601",
     },
-    // ML: browser real minimizado (sesión caliente). No headless.
-    pauseBetweenMs: 20000,
-    pauseJitterMs: 10000,
-    stayOnPageMs: 10000,
+    mlStrategies: ["direct", "mobile", "home_then_product", "plain_bundle"],
+    pauseBetweenMs: 15000,
+    pauseJitterMs: 8000,
+    stayOnPageMs: 8000,
     navTimeoutMs: 60000,
     waitUntil: "domcontentloaded",
-    blockCooldownMs: 120000,
+    blockCooldownMs: 60000,
   },
 
   facebook: {
@@ -41,7 +43,6 @@ export const platforms = {
       "Multigym Everlast":
         "https://www.facebook.com/marketplace/item/1592343702491847/",
     },
-    // Tunning FB (suele necesitar más paciencia / cookies)
     pauseBetweenMs: 10000,
     pauseJitterMs: 5000,
     stayOnPageMs: 15000,
