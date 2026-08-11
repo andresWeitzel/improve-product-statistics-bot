@@ -1,17 +1,16 @@
 /**
- * Prueba alerta de fallo por WhatsApp (CallMeBot).
+ * Prueba alerta de fallo (WhatsApp inmediato o fallback Gmail).
  *
  * Uso:
- *   npm run report:fail:preview
- *   npm run report:fail
- *   npm run report:fail -- --product="Multigym Everlast"
- *   npm run report:fail -- --error="HTTP 403 al cargar"
+ *   npm run whatsapp:fail:preview
+ *   npm run whatsapp:fail
  */
 import "dotenv/config";
 import {
-  isWhatsAppConfigured,
   sendFailAlertTest,
   getFailAlertMeta,
+  isMailConfigured,
+  isWhatsAppConfigured,
 } from "../src/notifications/index.js";
 
 function parseArgs(argv) {
@@ -39,15 +38,12 @@ function parseArgs(argv) {
 
 const opts = parseArgs(process.argv.slice(2));
 
-console.log("📱 Alerta de fallo WhatsApp (prueba)");
+console.log("🚨 Alerta de fallo (WhatsApp si inmediato · si no → Gmail)");
 console.log(JSON.stringify(getFailAlertMeta(), null, 2));
 console.log(`   mode=${opts.preview ? "preview" : "send"}`);
 
-if (!opts.preview && !isWhatsAppConfigured()) {
-  console.error("❌ Faltan WHATSAPP_PHONE / WHATSAPP_APIKEY en .env");
-  console.error(
-    "   Setup: https://www.callmebot.com/blog/free-api-whatsapp-messages/"
-  );
+if (!opts.preview && !isWhatsAppConfigured() && !isMailConfigured()) {
+  console.error("❌ Configurá WhatsApp y/o Gmail en .env");
   process.exit(1);
 }
 
@@ -68,7 +64,18 @@ try {
       console.log(`\n(no enviado: ${result.reason || "dryRun"})`);
     }
   } else {
-    console.log("\n✅ WhatsApp enviado — revisá el chat de CallMeBot.");
+    console.log(`\n✅ Alerta enviada · canal=${result.channel}`);
+    if (result.whatsapp?.queued) {
+      console.log(
+        "   WhatsApp quedó en cola CallMeBot → el aviso útil fue por Gmail."
+      );
+    }
+    if (result.email?.sent) {
+      console.log("   Revisá Gmail (aviso inmediato).");
+    }
+    if (result.whatsapp?.sent && !result.whatsapp?.queued) {
+      console.log("   Revisá WhatsApp (llegó al instante).");
+    }
   }
 } catch (err) {
   console.error("❌ Error:", err.message);

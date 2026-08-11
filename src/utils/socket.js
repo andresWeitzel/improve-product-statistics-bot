@@ -1,9 +1,9 @@
 import { recordVisit, getStats } from "../db/memoryDb.js";
-import { notifyVisitFailure } from "../notifications/whatsapp/failAlert.js";
+import { notifyVisitFailure } from "../notifications/notifyFailure.js";
 
 /**
  * Persiste la visita y la emite al frontend.
- * Fallos → WhatsApp (CallMeBot), no Gmail.
+ * Fallos → WhatsApp si es inmediato; si CallMeBot encola → Gmail al instante.
  */
 async function emitStatus(
   io,

@@ -1,7 +1,7 @@
 /**
  * Notificaciones:
- * - Gmail: reporte diario (21:00 AR)
- * - WhatsApp (CallMeBot): fallos + copia del reporte diario
+ * - Gmail: reporte diario + fallback de fallos (si CallMeBot encola)
+ * - WhatsApp: fallos (si llegan al instante) + copia del reporte
  */
 export {
   isMailConfigured,
@@ -13,9 +13,12 @@ export {
   dailyReportHour,
 } from "./email/index.js";
 
+export { isMailFailEnabled, sendFailAlertEmail } from "./email/failAlert.js";
+
 export {
   isWhatsAppConfigured,
   isWhatsAppEnabled,
+  isWhatsAppRateLimited,
   sendWhatsAppText,
 } from "./whatsapp/callMeBot.js";
 
@@ -29,6 +32,6 @@ export {
   notifyVisitFailure,
   sendFailAlertTest,
   getFailAlertMeta,
-} from "./whatsapp/failAlert.js";
+} from "./notifyFailure.js";
 
 export { formatFailMessage, formatTestMessage } from "./whatsapp/format.js";

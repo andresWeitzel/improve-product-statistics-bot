@@ -39,6 +39,10 @@ export async function sendDailyReportWhatsApp(report, opts = {}) {
 
   const text = formatDailyReportWhatsApp(report);
 
+  if (/FALLO DE VISITA/i.test(text)) {
+    throw new Error("Bug: el reporte WA no debe formatearse como fallo");
+  }
+
   if (opts.dryRun) {
     return { sent: false, reason: "dryRun", preview: { channel: "whatsapp", text } };
   }
@@ -51,8 +55,12 @@ export async function sendDailyReportWhatsApp(report, opts = {}) {
       );
       return { sent: false, ...result };
     }
-    console.log(`📱 WhatsApp reporte diario enviado · ${report.dateYmd}`);
-    return { sent: true };
+    console.log(`📱 WhatsApp reporte diario enviado · ${report.dateYmd}${result.queued ? " · EN COLA" : ""}`);
+    return {
+      sent: true,
+      queued: Boolean(result.queued),
+      immediate: Boolean(result.immediate),
+    };
   } catch (err) {
     console.error(`📱 WhatsApp reporte error:`, err.message);
     return { sent: false, reason: "error", error: err.message };

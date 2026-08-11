@@ -1,5 +1,7 @@
 node_modules/*
 data/visits.json
 data/browser-profiles/
+data/.whatsapp-last-send
+data/.whatsapp-rate-limited-until
 .env
 *.log

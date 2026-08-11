@@ -16,10 +16,10 @@ function cooldownMs() {
 }
 
 /**
- * Fallos → solo WhatsApp (CallMeBot).
- * @param {{ force?: boolean, dryRun?: boolean }} [opts]
+ * Fallos → WhatsApp (CallMeBot) únicamente.
+ * La orquestación con fallback Gmail está en ../notifyFailure.js
  */
-export async function notifyVisitFailure(visit, opts = {}) {
+export async function notifyVisitFailureWhatsApp(visit, opts = {}) {
   const text = formatFailMessage(visit, 0);
 
   if (opts.dryRun) {
@@ -51,6 +51,10 @@ export async function notifyVisitFailure(visit, opts = {}) {
 
   const message = formatFailMessage(visit, suppressed);
 
+  if (/REPORTE DIARIO/i.test(message)) {
+    throw new Error("Bug: la alerta de fallo no debe formatearse como reporte");
+  }
+
   try {
     const result = await sendWhatsAppText(message);
     if (!result.ok) {
@@ -60,16 +64,27 @@ export async function notifyVisitFailure(visit, opts = {}) {
       return { sent: false, ...result };
     }
     console.log(
-      `📱 WhatsApp fallo · ${visit?.platform}:${visit?.product}${suppressed ? ` (+${suppressed} omitidos)` : ""}`
+      `📱 WhatsApp fallo · ${visit?.platform}:${visit?.product}${suppressed ? ` (+${suppressed} omitidos)` : ""}${result.queued ? " · EN COLA CallMeBot" : ""}`
     );
-    return { sent: true, suppressed };
+    return {
+      sent: true,
+      suppressed,
+      queued: Boolean(result.queued),
+      immediate: Boolean(result.immediate),
+      channel: "whatsapp",
+    };
   } catch (err) {
     console.error(`📱 WhatsApp error:`, err.message);
     return { sent: false, reason: "error", error: err.message };
   }
 }
 
-export async function sendFailAlertTest(opts = {}) {
+/** @deprecated usar notifyVisitFailureWhatsApp */
+export async function notifyVisitFailure(visit, opts = {}) {
+  return notifyVisitFailureWhatsApp(visit, opts);
+}
+
+export async function sendFailAlertTestWhatsApp(opts = {}) {
   const now = new Date();
   const visit = {
     id: 0,
@@ -87,7 +102,7 @@ export async function sendFailAlertTest(opts = {}) {
     iso: now.toISOString(),
   };
 
-  return notifyVisitFailure(visit, {
+  return notifyVisitFailureWhatsApp(visit, {
     force: opts.force !== false,
     dryRun: Boolean(opts.dryRun),
   });

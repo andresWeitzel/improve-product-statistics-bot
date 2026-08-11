@@ -1,12 +1,44 @@
 /**
  * Formato UX WhatsApp (CallMeBot).
- * WA no permite colores: usamos emojis, negrita, monospace y aire visual.
- * El carácter ㅤ evita que WhatsApp comprima saltos de línea vacíos.
+ * WA no permite colores ni espacio real entre burbujas:
+ * padding liviano + etiqueta de tipo arriba/abajo.
+ * Mantener mensajes relativamente cortos (rate-limit CallMeBot).
  */
 
 export const GAP = "ㅤ";
 export const RULE = "━━━━━━━━━━━━━━━━";
 export const RULE_SOFT = "···············";
+
+const KIND_FRAME = {
+  fail: {
+    label: "🔻 FALLO",
+    bar: "🔴🔴🔴🔴🔴🔴",
+  },
+  report: {
+    label: "▪️ REPORTE",
+    bar: "⬛⬛⬛⬛⬛⬛",
+  },
+  test: {
+    label: "▫️ TEST",
+    bar: "⬜⬜⬜⬜⬜⬜",
+  },
+};
+
+/** Margen liviano para separar burbujas consecutivas. */
+export function frameMessage(kind, body) {
+  const frame = KIND_FRAME[kind] || KIND_FRAME.test;
+  return [
+    GAP,
+    frame.bar,
+    `*${frame.label}*`,
+    frame.bar,
+    "",
+    String(body || "").trim(),
+    "",
+    frame.bar,
+    GAP,
+  ].join("\n");
+}
 
 export function platformLabel(id) {
   if (id === "all") return "Todas";
@@ -27,7 +59,6 @@ export function healthEmoji(successRate, fail) {
   return "🔴";
 }
 
-/** Une bloques con aire real entre secciones. */
 export function joinBlocks(blocks) {
   return blocks
     .filter((b) => b != null && String(b).trim() !== "")
@@ -36,7 +67,6 @@ export function joinBlocks(blocks) {
 }
 
 export function section(titleLine, bodyLines = []) {
-  // Conservar líneas vacías a propósito (aire visual).
   return [titleLine, ...bodyLines.filter((l) => l != null)].join("\n");
 }
 
@@ -55,50 +85,21 @@ export function formatFailMessage(visit, suppressed = 0) {
   const error = visit?.error || "(sin detalle)";
   const plat = visit?.platform;
 
-  const banner = [
-    `🔴🔴🔴🔴🔴🔴🔴🔴`,
-    `‼️ *FALLO DE VISITA*`,
-    `🔴🔴🔴🔴🔴🔴🔴🔴`,
-    ``,
-    `*IPS Bot* · alerta inmediata`,
-  ].join("\n");
-
-  const meta = section(`📋 *Detalle*`, [
-    RULE,
-    `${platformEmoji(plat)} *Plataforma*`,
-    platformLabel(plat),
-    ``,
-    `📦 *Producto*`,
-    `*${product}*`,
-    ``,
-    `🕐 *Hora*`,
-    when,
+  const body = joinBlocks([
+    [`‼️ *FALLO DE VISITA*`, `*IPS Bot*`].join("\n"),
+    [
+      `${platformEmoji(plat)} ${platformLabel(plat)}`,
+      `📦 *${product}*`,
+      `🕐 ${when}`,
+    ].join("\n"),
+    [`❌ *Error*`, "```", error, "```"].join("\n"),
+    visit?.url ? [`🔗 Link`, visit.url].join("\n") : null,
+    suppressed > 0
+      ? `ℹ️ _(+${suppressed} omitidos por cooldown)_`
+      : null,
   ]);
 
-  const errBlock = [
-    `❌ *ERROR*`,
-    RULE,
-    "```",
-    error,
-    "```",
-  ].join("\n");
-
-  const linkBlock = visit?.url
-    ? ["🔗 *Link del listing*", RULE_SOFT, visit.url].join("\n")
-    : null;
-
-  const suppressedBlock =
-    suppressed > 0
-      ? `ℹ️ _(+${suppressed} fallos omitidos por cooldown)_`
-      : null;
-
-  const footer = [
-    RULE,
-    `👀 Revisá el monitor`,
-    `_http://localhost:9008_`,
-  ].join("\n");
-
-  return joinBlocks([banner, meta, errBlock, linkBlock, suppressedBlock, footer]);
+  return frameMessage("fail", body);
 }
 
 export function formatDailyReportWhatsApp(report) {
@@ -110,63 +111,47 @@ export function formatDailyReportWhatsApp(report) {
 
   const header = [
     `📊 *REPORTE DIARIO*`,
-    `*IPS Bot*`,
-    RULE,
-    `📅 ${report.dateYmd} · Argentina`,
+    `📅 ${report.dateYmd} · AR`,
     `${platformEmoji(report.platform)} ${platformLabel(report.platform)}`,
-    `${health} ${fail === 0 ? "*Todo OK*" : `*${fail} fallo(s) detectado(s)*`}`,
+    `${health} ${fail === 0 ? "*Todo OK*" : `*${fail} fallo(s)*`}`,
   ].join("\n");
 
-  const summary = section(`📈 *Resumen del día*`, [
-    RULE_SOFT,
-    `▫️ Total········ *${total}*`,
-    `✅ OK··········· *${ok}*`,
-    `${fail > 0 ? "🚨" : "✨"} Fallos······· *${fail}*`,
-    `📊 Éxito········ *${rate}%*`,
-  ]);
+  const summary = [
+    `📈 *Resumen*`,
+    `Total *${total}* · OK *${ok}* · Fallos *${fail}* · Éxito *${rate}%*`,
+  ].join("\n");
 
   let products = null;
   if (report.byProduct?.length) {
-    const rows = [];
-    for (const p of report.byProduct.slice(0, 8)) {
+    const rows = report.byProduct.slice(0, 8).map((p) => {
       const mark = p.fail > 0 ? "⚠️" : "✅";
-      rows.push(`${mark} *${p.product}*`);
-      rows.push(`    ${p.ok} ok  ·  ${p.fail} fail  ·  ${p.total} total`);
-      rows.push(GAP);
-    }
-    products = section(`📦 *Por producto*`, [RULE_SOFT, ...rows]);
+      return `${mark} ${p.product}: ${p.ok}/${p.fail}`;
+    });
+    products = [`📦 *Productos*`, ...rows].join("\n");
   }
 
   let failures = null;
   if (report.recentFailures?.length) {
-    const rows = [];
-    for (const f of report.recentFailures.slice(0, 5)) {
-      rows.push(`🔴 *${f.product}*`);
-      rows.push(`    ↳ ${f.error || "(sin detalle)"}`);
-      rows.push(GAP);
-    }
-    failures = section(`🚨 *Últimos fallos*`, [RULE_SOFT, ...rows]);
+    const rows = report.recentFailures.slice(0, 4).map((f) => {
+      return `🔴 ${f.product}: ${f.error || "(sin detalle)"}`;
+    });
+    failures = [`🚨 *Últimos fallos*`, ...rows].join("\n");
   } else {
-    failures = `✨ *Sin fallos* en el período.`;
+    failures = `✨ Sin fallos en el período.`;
   }
 
-  const footer = [
-    RULE,
-    `_Improve Product Statistics_`,
-    `_Reporte automático · 21:00 AR_`,
-  ].join("\n");
-
-  return joinBlocks([header, summary, products, failures, footer]);
+  return frameMessage(
+    "report",
+    joinBlocks([header, summary, products, failures, `_IPS Bot · 21:00 AR_`])
+  );
 }
 
 export function formatTestMessage(when = new Date()) {
   const stamp = when.toLocaleString("es-AR", {
     timeZone: "America/Argentina/Buenos_Aires",
   });
-  return joinBlocks([
-    ["✅ *IPS Bot — Test*", RULE, "CallMeBot conectado correctamente.", `🕐 ${stamp}`].join(
-      "\n"
-    ),
-    `_Improve Product Statistics_`,
-  ]);
+  return frameMessage(
+    "test",
+    [`✅ *IPS Bot — Test*`, `CallMeBot OK`, `🕐 ${stamp}`].join("\n")
+  );
 }

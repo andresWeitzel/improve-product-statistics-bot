@@ -56,14 +56,32 @@ npm run report:send -- --yesterday
 
 ### WhatsApp (CallMeBot)
 
+| Comando | Qué manda | Qué NO manda |
+|---------|-----------|--------------|
+| `npm run whatsapp:test` | 1 mensaje de conectividad | fallo / reporte |
+| `npm run whatsapp:fail` | Fallo: WA si inmediato, si no **Gmail al toque** | — |
+
+**CallMeBot free:** ~16 mensajes / 240 min. Si encola, una alerta tarde no sirve: el bot **deja de insistir por WA un rato** y te manda el fallo por **Gmail al instante**.
+
+Otras alternativas reales a CallMeBot (si más adelante querés push móvil sin ese tope): Telegram Bot (gratis, límites altos) o WhatsApp Cloud API de Meta (oficial, más setup).
+| `npm run report:send` | reporte Gmail + resumen WA | alerta de fallo |
+| `npm run report:send:gmail` | solo reporte Gmail | WhatsApp / fallo |
+| `npm run report:send:whatsapp` | solo reporte WhatsApp | Gmail / fallo |
+
+En producción es igual de separado:
+- visita `fail` → solo WhatsApp fallo
+- 21:00 → solo reporte (Gmail + WA)
+
+**CallMeBot free:** ~16 mensajes cada 240 min. Si testeás mucho, responde “en cola” y el WA tarda o llega agrupado. En ese caso esperá a que se vacíe la cola antes de seguir probando.
+
 1. Agregá el número del bot ([guía](https://www.callmebot.com/blog/free-api-whatsapp-messages/)).
 2. Mandá: `I allow callmebot to send me messages`
 3. Poné `WHATSAPP_PHONE`, `WHATSAPP_APIKEY` y `WHATSAPP_ENABLED=true` en `.env`
 
 ```bash
 npm run whatsapp:test
-npm run report:fail:preview
-npm run report:fail
+npm run whatsapp:fail:preview
+npm run whatsapp:fail
 ```
 
 El mensaje te llega en el **chat de CallMeBot**, no en “Mensaje a vos mismo”.
