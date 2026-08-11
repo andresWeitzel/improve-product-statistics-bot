@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "start": "node --expose-gc src/server.js",
-    "start:free": "node --expose-gc --max-old-space-size=256 src/server.js",
     "dev": "node scripts/dev.mjs",
     "report:preview": "node scripts/send-daily-report.mjs --preview",
     "report:send": "node scripts/send-daily-report.mjs",
@@ -20,13 +19,11 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^4.21.1",
-    "node-fetch": "^3.3.2",
     "nodemailer": "^9.0.5",
     "puppeteer": "^21.5.2",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1"
+    "socket.io": "^4.8.1"
   },
   "engines": {
     "node": ">=18.0.0"

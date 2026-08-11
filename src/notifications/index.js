@@ -1,7 +1,6 @@
 /**
  * Canal de notificaciones.
- * Hoy: email (reporte diario).
- * Luego: whatsapp/ (alertas de fallos).
+ * Hoy: email (reporte diario Gmail).
  */
 export {
   isMailConfigured,

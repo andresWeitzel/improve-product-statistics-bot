@@ -11,8 +11,7 @@ import {
   argentinaYmd,
   addDaysToYmd,
 } from "./db/memoryDb.js";
-import { platforms } from "./const/platforms.js";
-import { createVisitBot } from "./bots/visitRunner.js";
+import { platforms, createVisitBot } from "./platforms/index.js";
 import {
   sendDailyActivityReport,
   isDailyReportEnabled,

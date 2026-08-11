@@ -24,22 +24,6 @@ export const platforms = {
   facebook: facebookConfig,
 };
 
-/** Compat: mapa plano ML (código viejo / prod). */
-export const urlsML = Object.fromEntries(
-  Object.entries(platforms.mercadolibre.urls).map(([k, v]) => [
-    k,
-    typeof v === "string" ? v : v.url,
-  ])
-);
-
-/** Compat: mapa plano FB. */
-export const urlsFB = Object.fromEntries(
-  Object.entries(platforms.facebook.urls).map(([k, v]) => [
-    k,
-    typeof v === "string" ? v : v.url,
-  ])
-);
-
 /**
  * Loop infinito por plataforma.
  * ML = headless + rotación de estrategias anti-captcha.
