@@ -9,13 +9,15 @@ import {
   clearDb,
   getDailyReport,
   argentinaYmd,
-  addDaysToYmd,
 } from "./db/memoryDb.js";
 import { platforms, createVisitBot } from "./platforms/index.js";
 import {
   sendDailyActivityReport,
   isDailyReportEnabled,
   startDailyReportScheduler,
+  getFailAlertMeta,
+  dailyReportHour,
+  isWhatsAppEnabled,
 } from "./notifications/index.js";
 
 const app = express();
@@ -89,7 +91,7 @@ app.post("/api/reports/daily", async (req, res) => {
     const platform = req.query.platform || process.env.REPORT_PLATFORM || "facebook";
     const dateYmd =
       req.query.date ||
-      addDaysToYmd(argentinaYmd(new Date()), -1);
+      argentinaYmd(new Date());
 
     if (!send) {
       const report = getDailyReport({ dateYmd, platform });
@@ -146,6 +148,19 @@ const startServer = async () => {
       console.log(`🌐 URL: http://localhost:${PORT}/`);
       console.log(`🧠 DB: http://localhost:${PORT}/api/db`);
       startDailyReportScheduler();
+      const failMeta = getFailAlertMeta();
+      console.log(
+        `📧 Reporte diario Gmail · ${String(dailyReportHour()).padStart(2, "0")}:00 AR`
+      );
+      if (failMeta.enabled || isWhatsAppEnabled()) {
+        console.log(
+          `📱 WhatsApp ON · fallos + reporte · cooldown fallos ${Math.round(failMeta.cooldownMs / 60000)} min`
+        );
+      } else {
+        console.log(
+          "📱 WhatsApp OFF (WHATSAPP_ENABLED=false o faltan PHONE/APIKEY)"
+        );
+      }
     });
 
     setTimeout(async () => {

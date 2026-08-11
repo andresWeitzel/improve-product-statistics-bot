@@ -9,7 +9,10 @@
     "dev": "node scripts/dev.mjs",
     "report:preview": "node scripts/send-daily-report.mjs --preview",
     "report:send": "node scripts/send-daily-report.mjs",
-    "report:send:today": "node scripts/send-daily-report.mjs --today",
+    "report:send:yesterday": "node scripts/send-daily-report.mjs --yesterday",
+    "report:fail:preview": "node scripts/send-fail-alert.mjs --preview",
+    "report:fail": "node scripts/send-fail-alert.mjs",
+    "whatsapp:test": "node scripts/send-whatsapp-test.mjs",
     "postinstall": "npx puppeteer browsers install chrome",
     "docker:up": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/Start-Bot-Docker.ps1",
     "docker:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/Start-Bot-Docker.ps1 -Clean"

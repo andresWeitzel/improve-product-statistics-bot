@@ -3,7 +3,7 @@
  *
  * Uso:
  *   npm run report:send
- *   npm run report:send -- --today
+ *   npm run report:send -- --yesterday
  *   npm run report:send -- --date=2026-08-10
  *   npm run report:send -- --platform=facebook
  *   npm run report:send -- --preview
@@ -21,14 +21,15 @@ import {
 function parseArgs(argv) {
   const opts = {
     preview: false,
-    today: false,
+    yesterday: false,
     date: null,
     platform: process.env.REPORT_PLATFORM || "facebook",
   };
 
   for (const arg of argv) {
     if (arg === "--preview" || arg === "-p") opts.preview = true;
-    else if (arg === "--today") opts.today = true;
+    else if (arg === "--yesterday") opts.yesterday = true;
+    else if (arg === "--today") opts.yesterday = false; // default ya es hoy
     else if (arg.startsWith("--date=")) opts.date = arg.slice("--date=".length);
     else if (arg.startsWith("--platform="))
       opts.platform = arg.slice("--platform=".length);
@@ -41,9 +42,9 @@ const opts = parseArgs(process.argv.slice(2));
 
 const dateYmd = opts.date
   ? opts.date
-  : opts.today
-    ? argentinaYmd(new Date())
-    : addDaysToYmd(argentinaYmd(new Date()), -1);
+  : opts.yesterday
+    ? addDaysToYmd(argentinaYmd(new Date()), -1)
+    : argentinaYmd(new Date());
 
 console.log("📧 Reporte manual");
 console.log(`   date=${dateYmd}`);
@@ -66,16 +67,27 @@ try {
   });
 
   if (opts.preview || !result.sent) {
-    console.log("\n📋 Preview:");
+    console.log("\n📋 Preview Gmail (resumen):");
     console.log(JSON.stringify(result.report, null, 2));
+    if (result.whatsappPreview) {
+      console.log("\n📋 Preview WhatsApp:");
+      console.log(result.whatsappPreview);
+    }
     if (!result.sent) {
       console.log(`\n(no enviado: ${result.reason || "dryRun"})`);
     }
   } else {
-    console.log(`\n✅ Enviado · messageId=${result.messageId}`);
+    console.log(`\n✅ Gmail enviado · messageId=${result.messageId}`);
     console.log(
       `   ${result.report.total} visitas · ${result.report.ok} ok · ${result.report.fail} fail · ${result.report.successRate}%`
     );
+    if (result.whatsapp?.sent) {
+      console.log("✅ WhatsApp reporte enviado");
+    } else {
+      console.log(
+        `📱 WhatsApp reporte: ${result.whatsapp?.reason || "no enviado"}`
+      );
+    }
   }
 } catch (err) {
   console.error("❌ Error:", err.message);

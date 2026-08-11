@@ -37,15 +37,36 @@ Al re-ejecutar el script: rebuild de imagen + recreate del contenedor.
 | `-SkipStart` | Solo build |
 | `-Clean` | `compose down` antes |
 
-## Mail (Gmail)
+## Notificaciones
 
-Copiá `.env.example` → `.env` (App Password). El contenedor carga `.env` y envía el reporte a las **00:00** (Argentina).
+| Qué | Canal |
+|-----|--------|
+| Reporte diario 21:00 AR | **Gmail** + **WhatsApp** (CallMeBot) |
+| Fallo de visita | **WhatsApp** solamente |
+
+### Gmail
+
+Copiá `.env.example` → `.env` (App Password).
 
 ```bash
 npm run report:preview
 npm run report:send
-npm run report:send:today
+npm run report:send -- --yesterday
 ```
+
+### WhatsApp (CallMeBot)
+
+1. Agregá el número del bot ([guía](https://www.callmebot.com/blog/free-api-whatsapp-messages/)).
+2. Mandá: `I allow callmebot to send me messages`
+3. Poné `WHATSAPP_PHONE`, `WHATSAPP_APIKEY` y `WHATSAPP_ENABLED=true` en `.env`
+
+```bash
+npm run whatsapp:test
+npm run report:fail:preview
+npm run report:fail
+```
+
+El mensaje te llega en el **chat de CallMeBot**, no en “Mensaje a vos mismo”.
 
 ## Solución de problemas
 

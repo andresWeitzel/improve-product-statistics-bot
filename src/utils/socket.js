@@ -1,14 +1,9 @@
 import { recordVisit, getStats } from "../db/memoryDb.js";
+import { notifyVisitFailure } from "../notifications/whatsapp/failAlert.js";
 
 /**
  * Persiste la visita y la emite al frontend.
- * @param {import("socket.io").Server} io
- * @param {number} _legacyId
- * @param {"ok"|"fail"} status
- * @param {string} product
- * @param {string} url
- * @param {string|null} [error]
- * @param {string} [platform] mercadolibre | facebook
+ * Fallos → WhatsApp (CallMeBot), no Gmail.
  */
 async function emitStatus(
   io,
@@ -22,6 +17,10 @@ async function emitStatus(
   const visit = recordVisit({ status, product, url, error, platform });
   io.emit("update", visit);
   io.emit("stats", getStats());
+
+  if (status === "fail") {
+    void notifyVisitFailure(visit);
+  }
 }
 
 export { emitStatus };

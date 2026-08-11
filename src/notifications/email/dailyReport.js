@@ -1,37 +1,18 @@
-import nodemailer from "nodemailer";
 import {
   getDailyReport,
   argentinaYmd,
   addDaysToYmd,
 } from "../../db/memoryDb.js";
+import {
+  isMailConfigured,
+  isDailyReportEnabled,
+  createTransport,
+  mailFrom,
+  mailTo,
+  escapeHtml,
+} from "./mailer.js";
 
-function envFlag(name, fallback = false) {
-  const v = String(process.env[name] ?? "").trim().toLowerCase();
-  if (!v) return fallback;
-  return v === "1" || v === "true" || v === "yes" || v === "on";
-}
-
-export function isMailConfigured() {
-  return Boolean(
-    process.env.MAIL_USER &&
-      process.env.MAIL_PASS &&
-      (process.env.MAIL_TO || process.env.MAIL_USER)
-  );
-}
-
-export function isDailyReportEnabled() {
-  return envFlag("MAIL_ENABLED", false) && isMailConfigured();
-}
-
-function createTransport() {
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: String(process.env.MAIL_PASS || "").replace(/\s+/g, ""),
-    },
-  });
-}
+export { isMailConfigured, isDailyReportEnabled };
 
 function formatReportText(report) {
   const plat =
@@ -133,47 +114,41 @@ function formatReportHtml(report) {
 </html>`;
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 /**
- * Envía aunque MAIL_ENABLED=false (útil para disparo manual).
  * @param {{ dateYmd?: string, platform?: string, dryRun?: boolean, force?: boolean }} opts
  */
 export async function sendDailyActivityReport(opts = {}) {
   const platform =
     opts.platform || process.env.REPORT_PLATFORM || "facebook";
-  const dateYmd =
-    opts.dateYmd || addDaysToYmd(argentinaYmd(new Date()), -1);
+  // Por defecto: día calendario AR actual (el scheduler corre a las 21:00).
+  const dateYmd = opts.dateYmd || argentinaYmd(new Date());
 
   const report = getDailyReport({ dateYmd, platform });
 
   if (opts.dryRun) {
-    return { sent: false, reason: "dryRun", report };
+    const { formatDailyReportWhatsApp } = await import(
+      "../whatsapp/index.js"
+    );
+    return {
+      sent: false,
+      reason: "dryRun",
+      report,
+      whatsappPreview: formatDailyReportWhatsApp(report),
+    };
   }
 
   if (!isMailConfigured()) {
     return { sent: false, reason: "notConfigured", report };
   }
 
-  // Scheduler diario respeta MAIL_ENABLED; scripts manuales pueden forzar
   if (!opts.force && !isDailyReportEnabled()) {
     return { sent: false, reason: "disabled", report };
   }
 
-  const to = process.env.MAIL_TO || process.env.MAIL_USER;
-  const from =
-    process.env.MAIL_FROM ||
-    `Improve Product Stats <${process.env.MAIL_USER}>`;
-
+  const to = mailTo();
   const transporter = createTransport();
   const info = await transporter.sendMail({
-    from,
+    from: mailFrom(),
     to,
     subject: `[IPS Bot] Reporte ${dateYmd} · ${platform === "facebook" ? "Facebook" : platform} · ${report.ok} ok / ${report.fail} fail`,
     text: formatReportText(report),
@@ -181,5 +156,22 @@ export async function sendDailyActivityReport(opts = {}) {
   });
 
   console.log(`📧 Reporte diario enviado a ${to} · messageId=${info.messageId}`);
-  return { sent: true, messageId: info.messageId, report };
+
+  let whatsapp = { sent: false, reason: "skipped" };
+  try {
+    const { sendDailyReportWhatsApp } = await import("../whatsapp/index.js");
+    whatsapp = await sendDailyReportWhatsApp(report, { force: opts.force });
+  } catch (err) {
+    console.error(`📱 WhatsApp reporte error:`, err.message);
+    whatsapp = { sent: false, reason: "error", error: err.message };
+  }
+
+  return {
+    sent: true,
+    messageId: info.messageId,
+    report,
+    whatsapp,
+  };
 }
+
+export { addDaysToYmd, argentinaYmd };

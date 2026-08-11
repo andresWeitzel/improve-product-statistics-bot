@@ -6,5 +6,7 @@ export {
 
 export {
   msUntilNextMidnightArgentina,
+  msUntilNextArgentinaHour,
+  dailyReportHour,
   startDailyReportScheduler,
 } from "./scheduleDailyReport.js";
