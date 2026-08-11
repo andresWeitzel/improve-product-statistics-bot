@@ -3,6 +3,7 @@ import {
   isWhatsAppConfigured,
   sendWhatsAppText,
 } from "./callMeBot.js";
+import { formatFailMessage } from "./format.js";
 
 const state = {
   lastSentAt: 0,
@@ -12,39 +13,6 @@ const state = {
 function cooldownMs() {
   const n = Number(process.env.WHATSAPP_FAIL_COOLDOWN_MS);
   return Number.isFinite(n) && n >= 0 ? n : 5 * 60 * 1000;
-}
-
-function platformLabel(id) {
-  if (id === "facebook") return "Facebook";
-  if (id === "mercadolibre") return "MercadoLibre";
-  return id || "—";
-}
-
-function formatFailMessage(visit, suppressed) {
-  const when =
-    visit?.datetime ||
-    (visit?.iso
-      ? new Date(visit.iso).toLocaleString("es-AR", {
-          timeZone: "America/Argentina/Buenos_Aires",
-        })
-      : new Date().toLocaleString("es-AR", {
-          timeZone: "America/Argentina/Buenos_Aires",
-        }));
-
-  const lines = [
-    `*IPS Bot · Fallo*`,
-    `Plataforma: ${platformLabel(visit?.platform)}`,
-    `Producto: ${visit?.product || "—"}`,
-    `Hora: ${when}`,
-    `Error: ${visit?.error || "(sin detalle)"}`,
-  ];
-
-  if (visit?.url) lines.push(visit.url);
-  if (suppressed > 0) {
-    lines.push(`(+${suppressed} fallos omitidos por cooldown)`);
-  }
-
-  return lines.join("\n");
 }
 
 /**

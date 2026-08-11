@@ -3,6 +3,9 @@ import {
   isWhatsAppConfigured,
   sendWhatsAppText,
 } from "./callMeBot.js";
+import { formatDailyReportWhatsApp } from "./format.js";
+
+export { formatDailyReportWhatsApp } from "./format.js";
 
 function envFlag(name, fallback = false) {
   const v = String(process.env[name] ?? "").trim().toLowerCase();
@@ -20,44 +23,6 @@ export function isWhatsAppReportEnabled() {
     return isWhatsAppEnabled();
   }
   return envFlag("WHATSAPP_REPORT_ENABLED", false) && isWhatsAppConfigured();
-}
-
-function platformLabel(id) {
-  if (id === "all") return "Todas";
-  if (id === "facebook") return "Facebook";
-  if (id === "mercadolibre") return "MercadoLibre";
-  return id || "—";
-}
-
-export function formatDailyReportWhatsApp(report) {
-  const lines = [
-    `*IPS Bot · Reporte diario*`,
-    `Fecha: ${report.dateYmd} (AR)`,
-    `Plataforma: ${platformLabel(report.platform)}`,
-    ``,
-    `Total: ${report.total}`,
-    `OK: ${report.ok}`,
-    `Fallos: ${report.fail}`,
-    `Éxito: ${report.successRate}%`,
-  ];
-
-  if (report.byProduct?.length) {
-    lines.push(``);
-    lines.push(`*Por producto*`);
-    for (const p of report.byProduct.slice(0, 8)) {
-      lines.push(`· ${p.product}: ${p.ok} ok / ${p.fail} fail`);
-    }
-  }
-
-  if (report.recentFailures?.length) {
-    lines.push(``);
-    lines.push(`*Últimos fallos*`);
-    for (const f of report.recentFailures.slice(0, 5)) {
-      lines.push(`· ${f.product}: ${f.error || "(sin detalle)"}`);
-    }
-  }
-
-  return lines.join("\n");
 }
 
 /**

@@ -9,6 +9,7 @@ import {
   isWhatsAppEnabled,
   sendWhatsAppText,
   getFailAlertMeta,
+  formatTestMessage,
 } from "../src/notifications/index.js";
 
 console.log("📱 WhatsApp test (CallMeBot)");
@@ -24,9 +25,7 @@ if (!isWhatsAppEnabled()) {
 }
 
 try {
-  const text = `*IPS Bot · Test*\nCallMeBot OK · ${new Date().toLocaleString("es-AR", {
-    timeZone: "America/Argentina/Buenos_Aires",
-  })}`;
+  const text = formatTestMessage();
   const result = await sendWhatsAppText(text);
   if (result.ok) {
     console.log("✅ Mensaje de prueba enviado — mirá WhatsApp (chat CallMeBot).");

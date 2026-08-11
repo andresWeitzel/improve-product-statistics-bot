@@ -30,3 +30,5 @@ export {
   sendFailAlertTest,
   getFailAlertMeta,
 } from "./whatsapp/failAlert.js";
+
+export { formatFailMessage, formatTestMessage } from "./whatsapp/format.js";
