@@ -19,6 +19,7 @@ export {
   isWhatsAppConfigured,
   isWhatsAppEnabled,
   isWhatsAppRateLimited,
+  getWhatsAppRateLimitedUntil,
   sendWhatsAppText,
 } from "./whatsapp/callMeBot.js";
 

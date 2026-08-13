@@ -10,6 +10,12 @@ import {
   getDailyReport,
   argentinaYmd,
 } from "./db/memoryDb.js";
+import {
+  getActionHistory,
+  getActionSummary,
+  recordWhatsAppTest,
+  onAction,
+} from "./db/actionsDb.js";
 import { platforms, createVisitBot } from "./platforms/index.js";
 import {
   sendDailyActivityReport,
@@ -18,13 +24,62 @@ import {
   getFailAlertMeta,
   dailyReportHour,
   isWhatsAppEnabled,
+  isWhatsAppConfigured,
+  isMailConfigured,
+  isMailFailEnabled,
+  sendFailAlertTest,
+  sendWhatsAppText,
+  formatTestMessage,
 } from "./notifications/index.js";
 
 const app = express();
 const server = http.createServer(app);
 const io = new SocketIO(server);
 
-app.use(express.static("public"));
+app.use(express.json({ limit: "32kb" }));
+
+function maskEmail(email) {
+  const s = String(email || "");
+  const at = s.indexOf("@");
+  if (at < 1) return s ? "***" : "";
+  const user = s.slice(0, at);
+  const domain = s.slice(at);
+  return `${user.slice(0, 2)}${"*".repeat(Math.max(1, user.length - 2))}${domain}`;
+}
+
+function maskPhone(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length <= 4) return "****";
+  return `${"*".repeat(digits.length - 4)}${digits.slice(-4)}`;
+}
+
+function notificationStatus() {
+  const fail = getFailAlertMeta();
+  const mailTo = process.env.MAIL_TO || process.env.MAIL_USER || "";
+  const phone = String(process.env.WHATSAPP_PHONE || "").replace(/\D/g, "");
+  return {
+    email: {
+      configured: isMailConfigured(),
+      dailyEnabled: isDailyReportEnabled(),
+      failEnabled: isMailFailEnabled(),
+      to: mailTo,
+      toMasked: maskEmail(mailTo),
+      reportHour: dailyReportHour(),
+    },
+    whatsapp: {
+      enabled: isWhatsAppEnabled(),
+      configured: isWhatsAppConfigured(),
+      phone,
+      phoneMasked: maskPhone(phone),
+      rateLimited: Boolean(fail.whatsappRateLimited),
+      rateLimitedUntil: fail.whatsappRateLimitedUntil,
+      cooldownMs: fail.whatsapp?.cooldownMs ?? null,
+    },
+    fail,
+    policy: fail.policy,
+  };
+}
 
 app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString(), db: getDbMeta() });
@@ -41,6 +96,7 @@ app.get("/api/history", (req, res) => {
   const hourFrom = req.query.hourFrom ?? "";
   const hourTo = req.query.hourTo ?? "";
   const platform = req.query.platform || "all";
+  const since = req.query.since || "";
   res.json(
     getHistory({
       page,
@@ -53,16 +109,77 @@ app.get("/api/history", (req, res) => {
       hourFrom,
       hourTo,
       platform,
+      since,
     })
   );
 });
 
-app.get("/api/stats", (_req, res) => {
-  res.json(getStats());
+app.get("/api/stats", (req, res) => {
+  res.json(getStats({ since: req.query.since || "" }));
 });
 
 app.get("/api/db", (_req, res) => {
   res.json(getDbMeta());
+});
+
+app.get("/api/notifications", (_req, res) => {
+  res.json({ ...notificationStatus(), log: getActionSummary() });
+});
+
+app.get("/api/actions", (req, res) => {
+  res.json(
+    getActionHistory({
+      page: Number(req.query.page) || 1,
+      limit: Number(req.query.limit) || 15,
+      channel: req.query.channel || "all",
+      type: req.query.type || "all",
+      status: req.query.status || "all",
+      range: req.query.range || "all",
+      date: req.query.date || "",
+      q: req.query.q || "",
+    })
+  );
+});
+
+app.get("/api/actions/summary", (_req, res) => {
+  res.json(getActionSummary());
+});
+
+app.post("/api/notifications/test/whatsapp", async (_req, res) => {
+  try {
+    if (!isWhatsAppConfigured()) {
+      return res.status(400).json({
+        ok: false,
+        reason: "notConfigured",
+        error: "Faltan WHATSAPP_PHONE / WHATSAPP_APIKEY",
+      });
+    }
+    const text = formatTestMessage();
+    const result = await sendWhatsAppText(text);
+    recordWhatsAppTest(result, "ui");
+    res.json({
+      kind: "whatsapp-test",
+      ...result,
+    });
+  } catch (err) {
+    console.error("📱 /api/notifications/test/whatsapp:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/notifications/test/fail", async (req, res) => {
+  try {
+    const dryRun = String(req.query.preview || req.query.dryRun || "") === "1";
+    const result = await sendFailAlertTest({
+      force: true,
+      dryRun,
+      platform: req.query.platform || "facebook",
+    });
+    res.json({ kind: "fail-test", ...result });
+  } catch (err) {
+    console.error("📱 /api/notifications/test/fail:", err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/api/platforms", (_req, res) => {
@@ -102,17 +219,30 @@ app.post("/api/reports/daily", async (req, res) => {
       });
     }
 
+    const channelsRaw = String(req.query.channels || "all").toLowerCase();
+    const channels =
+      channelsRaw === "email" || channelsRaw === "whatsapp"
+        ? channelsRaw
+        : "all";
+
     const result = await sendDailyActivityReport({
       dateYmd,
       platform,
       dryRun: false,
       force: true,
+      channels,
     });
     res.json(result);
   } catch (err) {
     console.error("📧 /api/reports/daily:", err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+app.use(express.static("public"));
+
+onAction((entry) => {
+  io.emit("action", entry);
 });
 
 io.on("connection", (socket) => {
@@ -149,12 +279,15 @@ const startServer = async () => {
       console.log(`🧠 DB: http://localhost:${PORT}/api/db`);
       startDailyReportScheduler();
       const failMeta = getFailAlertMeta();
+      const waCooldownMs = failMeta.whatsapp?.cooldownMs || 0;
       console.log(
         `📧 Reporte diario Gmail · ${String(dailyReportHour()).padStart(2, "0")}:00 AR`
       );
-      if (failMeta.enabled || isWhatsAppEnabled()) {
+      console.log(`🌐 Acciones: http://localhost:${PORT}/actions.html`);
+      console.log(`🧠 Admin DB: http://localhost:${PORT}/admin.html`);
+      if (failMeta.whatsapp?.enabled || isWhatsAppEnabled()) {
         console.log(
-          `📱 WhatsApp ON · fallos + reporte · cooldown fallos ${Math.round(failMeta.cooldownMs / 60000)} min`
+          `📱 WhatsApp ON · fallos + reporte · cooldown fallos ${Math.round(waCooldownMs / 60000)} min`
         );
       } else {
         console.log(

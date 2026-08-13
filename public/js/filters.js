@@ -1,4 +1,5 @@
 import { applyFiltersAndReload, loadHistory } from "./history.js";
+import { loadActivityChart, loadStats } from "./stats.js";
 import { isMlEnabled, els, state } from "./state.js";
 import { pad2 } from "./util.js";
 
@@ -42,6 +43,8 @@ export function resetFilters() {
   if (els.productFilter) els.productFilter.value = "";
   if (els.searchFilter) els.searchFilter.value = "";
   loadHistory();
+  loadStats();
+  loadActivityChart();
 }
 
 export function bindFilters() {

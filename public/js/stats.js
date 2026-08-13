@@ -1,5 +1,6 @@
 import { fetchHistory, fetchStats } from "./api.js";
 import { buildTimelineFromVisits, drawRatio, drawTimeline } from "./charts.js";
+import { alertDialog } from "./dialog.js";
 import { resolvePlatformClient } from "./platforms.js";
 import { els, isMlEnabled, state } from "./state.js";
 import { escapeHtml } from "./util.js";
@@ -179,7 +180,11 @@ export async function copyFailLogs() {
         }, 1600);
       }
     } catch {
-      alert("No se pudo copiar al portapapeles");
+      alertDialog({
+        title: "No se pudo copiar",
+        message: "El navegador bloqueó el portapapeles. Probá de nuevo o copiá a mano.",
+        tone: "danger",
+      });
     }
     ta.remove();
   }

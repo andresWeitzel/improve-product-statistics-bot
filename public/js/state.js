@@ -27,7 +27,6 @@ export const els = {};
 export function bindEls() {
   Object.assign(els, {
     conn: document.getElementById("connectionStatus"),
-    clearDbBtn: document.getElementById("clearDbBtn"),
     clearFiltersBtn: document.getElementById("clearFiltersBtn"),
     tbody: document.getElementById("statusContainer"),
     empty: document.getElementById("historyEmpty"),

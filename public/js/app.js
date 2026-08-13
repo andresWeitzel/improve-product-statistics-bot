@@ -2,7 +2,6 @@
  * Monitor UI — punto de entrada.
  * Módulos: state, api, charts, platforms, history, stats, filters.
  */
-import { clearDb } from "./api.js";
 import { setConnection } from "./connection.js";
 import { bindFilters, fillHourSelects, resetFilters } from "./filters.js";
 import {
@@ -26,18 +25,6 @@ function refreshAll() {
   });
 }
 
-async function clearMemoryDb() {
-  if (!confirm("¿Vaciar todo el historial de visitas?")) return;
-  try {
-    await clearDb();
-    state.page = 1;
-    await Promise.all([loadHistory(), loadStats(), loadActivityChart()]);
-  } catch (err) {
-    console.error("Error limpiando historial:", err);
-    alert("No se pudo limpiar el historial");
-  }
-}
-
 function scheduleRefresh() {
   clearTimeout(state.refreshTimer);
   state.refreshTimer = setTimeout(() => {
@@ -50,7 +37,6 @@ function scheduleRefresh() {
 function bindActions() {
   bindFilters();
   bindPager();
-  els.clearDbBtn?.addEventListener("click", clearMemoryDb);
   els.clearFiltersBtn?.addEventListener("click", resetFilters);
   els.copyFailsBtn?.addEventListener("click", copyFailLogs);
 }

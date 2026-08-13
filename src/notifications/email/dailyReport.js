@@ -153,10 +153,24 @@ export async function sendDailyActivityReport(opts = {}) {
 
   if (wantEmail) {
     if (!isMailConfigured()) {
-      return { sent: false, reason: "notConfigured", report, channels, email, whatsapp };
+      const payload = { sent: false, reason: "notConfigured", report, channels, email, whatsapp };
+      try {
+        const { recordDailyReport } = await import("../../db/actionsDb.js");
+        recordDailyReport(payload, opts);
+      } catch {
+        // ignore
+      }
+      return payload;
     }
     if (!opts.force && !isDailyReportEnabled()) {
-      return { sent: false, reason: "disabled", report, channels, email, whatsapp };
+      const payload = { sent: false, reason: "disabled", report, channels, email, whatsapp };
+      try {
+        const { recordDailyReport } = await import("../../db/actionsDb.js");
+        recordDailyReport(payload, opts);
+      } catch {
+        // ignore
+      }
+      return payload;
     }
 
     const to = mailTo();
@@ -184,7 +198,7 @@ export async function sendDailyActivityReport(opts = {}) {
   }
 
   const sent = Boolean(email.sent || whatsapp.sent);
-  return {
+  const payload = {
     sent,
     messageId: email.messageId,
     report,
@@ -192,6 +206,17 @@ export async function sendDailyActivityReport(opts = {}) {
     email,
     whatsapp,
   };
+
+  if (!opts.dryRun) {
+    try {
+      const { recordDailyReport } = await import("../../db/actionsDb.js");
+      recordDailyReport(payload, opts);
+    } catch (err) {
+      console.error("⚠️ No se pudo guardar el reporte:", err.message);
+    }
+  }
+
+  return payload;
 }
 
 export { addDaysToYmd, argentinaYmd };

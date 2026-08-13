@@ -86,7 +86,7 @@ export async function notifyVisitFailure(visit, opts = {}) {
   }
 
   const sent = Boolean(result.email.sent || waReliable);
-  return {
+  const payload = {
     sent,
     channel: result.email.sent
       ? waReliable
@@ -97,6 +97,20 @@ export async function notifyVisitFailure(visit, opts = {}) {
         : "none",
     ...result,
   };
+
+  if (!opts.dryRun) {
+    try {
+      const { recordFailAlert } = await import("../db/actionsDb.js");
+      recordFailAlert(payload, visit, {
+        source: opts.source || "bot",
+        type: opts.type,
+      });
+    } catch (err) {
+      console.error("⚠️ No se pudo guardar la alerta:", err.message);
+    }
+  }
+
+  return payload;
 }
 
 export async function sendFailAlertTest(opts = {}) {
@@ -120,6 +134,8 @@ export async function sendFailAlertTest(opts = {}) {
   return notifyVisitFailure(visit, {
     force: opts.force !== false,
     dryRun: Boolean(opts.dryRun),
+    source: "ui",
+    type: "test",
   });
 }
 

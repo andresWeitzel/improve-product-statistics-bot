@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="index.css" />
+    <title>Acciones — Improve Product Statistics</title>
+  </head>
+  <body>
+    <div class="bg" aria-hidden="true"></div>
+
+    <header class="top">
+      <div class="brand-block">
+        <div class="brand-row">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <p class="brand">Improve Product Statistics</p>
+        </div>
+        <h1>Acciones</h1>
+        <nav class="site-nav" aria-label="Secciones">
+          <a href="/" class="site-nav__link">Monitor</a>
+          <a href="/actions.html" class="site-nav__link is-active">Acciones</a>
+          <a href="/admin.html" class="site-nav__link">Base de datos</a>
+        </nav>
+      </div>
+      <div class="top-actions">
+        <button type="button" id="refreshStatus" class="ghost-btn">Actualizar</button>
+        <div id="actionsConn" class="conn conn--pending" role="status">
+          <span class="conn__dot" aria-hidden="true"></span>
+          <span class="conn__text">Cargando…</span>
+        </div>
+      </div>
+    </header>
+
+    <p class="page-lead">
+      Envíos de Gmail y WhatsApp quedan guardados en
+      <code>data/actions.json</code> (tests, alertas reales y reportes). CallMeBot
+      tiene cupo (~16 msgs / 240 min).
+    </p>
+
+    <section class="page-grid page-grid--3" aria-label="Estado de canales">
+      <article class="panel status-card">
+        <div class="panel__head">
+          <h2>Gmail</h2>
+          <span id="mailPill" class="pill">…</span>
+        </div>
+        <dl class="kv">
+          <dt>Destino</dt>
+          <dd>
+            <span class="secret-row">
+              <span id="mailTo" class="secret-value">—</span>
+              <button type="button" id="toggleMail" class="secret-btn" hidden aria-pressed="false">
+                Mostrar
+              </button>
+            </span>
+          </dd>
+          <dt>Reporte diario</dt>
+          <dd id="mailDaily">—</dd>
+          <dt>Alerta de fallo</dt>
+          <dd id="mailFail">—</dd>
+        </dl>
+      </article>
+
+      <article class="panel status-card">
+        <div class="panel__head">
+          <h2>WhatsApp</h2>
+          <span id="waPill" class="pill">…</span>
+        </div>
+        <dl class="kv">
+          <dt>Número</dt>
+          <dd>
+            <span class="secret-row">
+              <span id="waPhone" class="secret-value">—</span>
+              <button type="button" id="togglePhone" class="secret-btn" hidden aria-pressed="false">
+                Mostrar
+              </button>
+            </span>
+          </dd>
+          <dt>CallMeBot</dt>
+          <dd id="waLimit">—</dd>
+          <dt>Cooldown fallos</dt>
+          <dd id="waCooldown">—</dd>
+        </dl>
+      </article>
+
+      <article class="panel status-card">
+        <div class="panel__head">
+          <h2>Política</h2>
+        </div>
+        <ol class="policy-list">
+          <li>WhatsApp solo si el aviso llega al instante.</li>
+          <li>Si CallMeBot encola o limita, Gmail sale ya.</li>
+          <li id="policyHour">Reporte diario a las 21:00 AR (Gmail + WhatsApp).</li>
+        </ol>
+      </article>
+    </section>
+
+    <section class="page-grid page-grid--3" aria-label="Últimos envíos">
+      <article class="panel status-card">
+        <div class="panel__head">
+          <h2>Último WhatsApp</h2>
+          <span id="lastWaPill" class="pill">—</span>
+        </div>
+        <p id="lastWaText" class="muted">Sin envíos todavía.</p>
+      </article>
+      <article class="panel status-card">
+        <div class="panel__head">
+          <h2>Último Gmail</h2>
+          <span id="lastMailPill" class="pill">—</span>
+        </div>
+        <p id="lastMailText" class="muted">Sin envíos todavía.</p>
+      </article>
+      <article class="panel status-card">
+        <div class="panel__head">
+          <h2>Último reporte</h2>
+          <span id="lastReportPill" class="pill">—</span>
+        </div>
+        <p id="lastReportText" class="muted">Sin reportes todavía.</p>
+      </article>
+    </section>
+
+    <section class="page-grid" aria-label="Pruebas">
+      <article class="panel action-card">
+        <div class="panel__head">
+          <h2>Test WhatsApp</h2>
+        </div>
+        <p>Un mensaje corto de conectividad. No es un fallo ni el reporte diario.</p>
+        <div class="btn-row">
+          <button type="button" id="btnWaTest" class="primary-btn">Enviar test</button>
+        </div>
+      </article>
+
+      <article class="panel action-card">
+        <div class="panel__head">
+          <h2>Alerta de fallo</h2>
+        </div>
+        <p>
+          Simula un listing caído: WhatsApp si llega al instante; si CallMeBot
+          encola, Gmail de inmediato.
+        </p>
+        <div class="btn-row">
+          <button type="button" id="btnFailPreview" class="ghost-btn">Vista previa</button>
+          <button type="button" id="btnFailTest" class="primary-btn">Enviar alerta</button>
+        </div>
+      </article>
+
+      <article class="panel action-card">
+        <div class="panel__head">
+          <h2>Reporte diario</h2>
+        </div>
+        <p>Mismo contenido que a las 21:00 AR. Queda registrado en el historial.</p>
+        <div class="btn-row">
+          <button type="button" id="btnReportPreview" class="ghost-btn">Vista previa</button>
+          <button type="button" id="btnReportEmail" class="primary-btn">Gmail</button>
+          <button type="button" id="btnReportWa" class="primary-btn">WhatsApp</button>
+          <button type="button" id="btnReportAll" class="primary-btn">Ambos</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel" aria-labelledby="result-title">
+      <div class="panel__head">
+        <h2 id="result-title">Resultado</h2>
+        <span id="resultPill" class="pill">listo</span>
+      </div>
+      <p id="resultBanner" class="result-banner muted">
+        Todavía no corriste ninguna acción en esta sesión.
+      </p>
+      <details id="resultDetails" class="result-details hidden">
+        <summary>Detalle técnico</summary>
+        <pre id="resultLog" class="result-log"></pre>
+      </details>
+    </section>
+
+    <section class="panel history-panel" aria-labelledby="log-title">
+      <div class="panel__head panel__head--stack">
+        <div class="history-title-row">
+          <h2 id="log-title">Historial de envíos</h2>
+          <button type="button" id="resetActionFilters" class="ghost-btn ghost-btn--small">
+            Reset filtros
+          </button>
+        </div>
+        <div class="filter-bar">
+          <div class="filter-grid">
+            <div class="filter-block">
+              <span class="filter-label">Canal</span>
+              <div class="filters filters--full" role="group" aria-label="Canal">
+                <button type="button" class="filter is-active" data-channel="all">Todos</button>
+                <button type="button" class="filter" data-channel="whatsapp">WhatsApp</button>
+                <button type="button" class="filter" data-channel="email">Gmail</button>
+              </div>
+            </div>
+            <div class="filter-block">
+              <span class="filter-label">Tipo</span>
+              <div class="filters filters--full" role="group" aria-label="Tipo">
+                <button type="button" class="filter is-active" data-type="all">Todos</button>
+                <button type="button" class="filter" data-type="test">Test</button>
+                <button type="button" class="filter" data-type="alert">Alerta</button>
+                <button type="button" class="filter" data-type="report">Reporte</button>
+              </div>
+            </div>
+            <div class="filter-block">
+              <span class="filter-label">Estado</span>
+              <div class="filters filters--full" role="group" aria-label="Estado">
+                <button type="button" class="filter is-active" data-status="all">Todos</button>
+                <button type="button" class="filter" data-status="ok">OK</button>
+                <button type="button" class="filter" data-status="queued">Encolado</button>
+                <button type="button" class="filter" data-status="fail">Fallo</button>
+              </div>
+            </div>
+            <div class="filter-block">
+              <span class="filter-label">Tiempo</span>
+              <div class="filters filters--full filters--wrap" role="group" aria-label="Rango">
+                <button type="button" class="filter range is-active" data-range="all">Todo</button>
+                <button type="button" class="filter range" data-range="1h">1h</button>
+                <button type="button" class="filter range" data-range="24h">24h</button>
+                <button type="button" class="filter range" data-range="today">Hoy</button>
+                <button type="button" class="filter range" data-range="yesterday">Ayer</button>
+                <button type="button" class="filter range" data-range="7d">7d</button>
+              </div>
+            </div>
+            <div class="filter-block filter-block--controls">
+              <label class="field">
+                <span class="filter-label">Día</span>
+                <input id="actionDate" class="control" type="date" />
+              </label>
+              <label class="field field--grow">
+                <span class="filter-label">Buscar</span>
+                <input
+                  id="actionSearch"
+                  class="control"
+                  type="search"
+                  placeholder="Resumen, producto, origen…"
+                  autocomplete="off"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tipo</th>
+              <th>Canal</th>
+              <th>Estado</th>
+              <th>Origen</th>
+              <th>Resumen</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="actionRows"></tbody>
+        </table>
+        <p id="actionEmpty" class="empty hidden">Sin envíos registrados aún.</p>
+      </div>
+      <div class="pager">
+        <button type="button" id="actionPrev" class="pager__btn" disabled>← Anterior</button>
+        <span id="actionPageInfo" class="pager__info">Página 1 / 1</span>
+        <button type="button" id="actionNext" class="pager__btn" disabled>Siguiente →</button>
+      </div>
+    </section>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="js/actions.js"></script>
+  </body>
+</html>
