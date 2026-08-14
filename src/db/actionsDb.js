@@ -7,7 +7,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.resolve(__dirname, "../../data");
 const DB_FILE = path.join(DATA_DIR, "actions.json");
 const MAX_ACTIONS = 2000;
-const SAVE_DEBOUNCE_MS = 400;
 const AR_TZ = "America/Argentina/Buenos_Aires";
 
 const listeners = new Set();
@@ -93,8 +92,6 @@ class ActionsDb {
     this.nextId = 1;
     /** @type {Array<object>} más reciente primero */
     this.actions = [];
-    this._saveTimer = null;
-    this._dirty = false;
     this._load();
   }
 
@@ -116,17 +113,8 @@ class ActionsDb {
     }
   }
 
-  _scheduleSave() {
-    this._dirty = true;
-    if (this._saveTimer) return;
-    this._saveTimer = setTimeout(() => {
-      this._saveTimer = null;
-      this._flush();
-    }, SAVE_DEBOUNCE_MS);
-  }
-
+  /** Sync write: el volumen es bajo y los CLI salen antes de un debounce. */
   _flush() {
-    if (!this._dirty) return;
     try {
       this._ensureDataDir();
       fs.writeFileSync(
@@ -142,7 +130,6 @@ class ActionsDb {
         ),
         "utf8"
       );
-      this._dirty = false;
     } catch (err) {
       console.error("⚠️ Actions DB: no se pudo guardar:", err.message);
     }
@@ -169,7 +156,7 @@ class ActionsDb {
     if (this.actions.length > MAX_ACTIONS) {
       this.actions.length = MAX_ACTIONS;
     }
-    this._scheduleSave();
+    this._flush();
     emitAction(row);
     return row;
   }

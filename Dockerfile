@@ -38,6 +38,8 @@ RUN npm install --omit=dev --ignore-scripts
 
 COPY src ./src
 COPY public ./public
+# Plantillas públicas; las URLs reales se montan desde el host (gitignored)
+COPY facebook.urls.example.json mercadolibre.urls.example.json ./
 
 RUN mkdir -p /app/data
 

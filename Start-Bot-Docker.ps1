@@ -7,10 +7,10 @@
   IMPORTANT: Open Docker Desktop yourself and wait until "Engine running".
   This script does NOT start Docker Desktop (that can leave hung processes).
 
-  Then run:
-    .\scripts\Start-Bot-Docker.ps1
+  Then run from the repo root:
+    .\Start-Bot-Docker.ps1
   Or double-click:
-    scripts\Start-Bot-Docker.bat
+    Start-Bot-Docker.bat
 
   After this, Start/Stop the container "improve-product-statistics-bot" from Docker Desktop.
   UI: http://localhost:9008
@@ -28,7 +28,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+$RepoRoot = $PSScriptRoot
 Set-Location $RepoRoot
 
 $ContainerName = "improve-product-statistics-bot"
@@ -69,7 +69,7 @@ function Assert-DockerEngineReady {
     "  1. Quit Docker Desktop completely if it is stuck (system tray > Quit)`n" +
     "  2. Open Docker Desktop from the Start menu`n" +
     "  3. Wait until it says Engine running`n" +
-    "  4. Re-run: scripts\Start-Bot-Docker.bat`n`n" +
+    "  4. Re-run: Start-Bot-Docker.bat`n`n" +
     "Auto-starting Docker Desktop.exe from a script can leave hung processes on Windows."
   throw $msg
 }
@@ -158,5 +158,5 @@ Write-Host ""
 Write-Host "Next:"
 Write-Host "  1. Open http://localhost:9008"
 Write-Host "  2. App code change: run the .bat again (build + recreate)"
-Write-Host "  3. Stuck state: .\scripts\Start-Bot-Docker.ps1 -Clean"
+Write-Host "  3. Stuck state: .\Start-Bot-Docker.ps1 -Clean"
 Write-Host "  4. Manual mail test (host): npm run report:send"

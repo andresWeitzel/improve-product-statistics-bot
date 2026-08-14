@@ -1,7 +1,7 @@
 @echo off
 setlocal
 title Improve Product Statistics Bot - Docker build + start
-cd /d "%~dp0\.."
+cd /d "%~dp0"
 echo.
 echo Improve Product Statistics Bot
 echo Build Docker image + start container
