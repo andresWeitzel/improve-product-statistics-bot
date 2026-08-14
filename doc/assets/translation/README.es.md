@@ -34,9 +34,11 @@
 
 </div>
 
-**Autoincrementador de visitas** para Marketplace: un bot de automatización 24/7 que abre tus publicaciones una y otra vez para que las vistas y las estadísticas del producto no se estanquen — sin estar refrescando a mano. Armado con **Node.js**, **Puppeteer**, **Express** y **Socket.IO**, corre el ciclo headless, registra cada OK/fallo y te deja el control con **Monitor** en vivo, panel de **Acciones** (Gmail + WhatsApp / CallMeBot) y **Base de datos** en el puerto **9008**. **Facebook** ya dispara; **MercadoLibre** queda listo para cuando baje el anti-bot. Lo metés en **Docker** local y que labure mientras vos vendés.
+Este es un software de operación que **visita, mide, alerta y reporta**: un bot de automatización 24/7 que abre tus publicaciones una y otra vez para que las vistas y las estadísticas del producto mejoren. Armado con **Node.js**, **Puppeteer**, **Express** y **Socket.IO**, corre el ciclo headless, registra cada OK/fallo y te deja el control con **Monitor** en vivo, panel de **Acciones** (Gmail + WhatsApp / CallMeBot) y **Base de datos** en el puerto **9008**. Lo metés en **Docker** local y que labure mientras vos vendés.
 
 **UI local:** [http://localhost:9008](http://localhost:9008/)
+
+* [Video de pruebas funcionales](https://www.youtube.com/watch?v=QMlpFdOQHfI) <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI" target="_blank"><img src="../icons/social-networks/yt.svg" width="20" alt="YouTube" /></a>
 
 <br>
 
@@ -329,6 +331,22 @@ Variables clave: ver `.env.example` (`MAIL_*`, `WHATSAPP_*`, `REPORT_HOUR`).
   <summary>Ver detalle</summary>
 
 <br>
+
+#### 3.0.1) Video del funcionamiento
+
+Cómo trabaja el bot (Monitor, Acciones, Base de datos, visitas y notificaciones):
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI" target="_blank">
+    <img src="https://img.youtube.com/vi/QMlpFdOQHfI/maxresdefault.jpg" alt="Improve Product Statistics Bot — funcionamiento" width="720" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI">Ver en YouTube</a>
+</p>
+
+#### 3.0.2) Checklist
 
 1. UI en `:9008` conectada.
 2. `npm run whatsapp:test`
