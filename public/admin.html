@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="index.css" />
+    <title>Base de datos — Improve Product Statistics</title>
+  </head>
+  <body>
+    <div class="bg" aria-hidden="true"></div>
+
+    <header class="top">
+      <div class="brand-block">
+        <div class="brand-row">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <p class="brand">Improve Product Statistics</p>
+        </div>
+        <h1>Base de datos</h1>
+        <nav class="site-nav" aria-label="Secciones">
+          <a href="/" class="site-nav__link">Monitor</a>
+          <a href="/actions.html" class="site-nav__link">Acciones</a>
+          <a href="/admin.html" class="site-nav__link is-active">Base de datos</a>
+        </nav>
+      </div>
+      <div class="top-actions">
+        <button type="button" id="refreshBtn" class="ghost-btn">Actualizar</button>
+      </div>
+    </header>
+
+    <p class="page-lead">
+      Visitas en memoria, persistidas en <code>data/visits.json</code>. El tope
+      es 5000 registros: al llenarse se descartan los más viejos.
+    </p>
+
+    <section class="metrics" aria-label="Resumen">
+      <div class="metric">
+        <span class="metric__label">En memoria</span>
+        <strong id="statVisits" class="metric__value">0</strong>
+      </div>
+      <div class="metric metric--ok">
+        <span class="metric__label">OK</span>
+        <strong id="statOk" class="metric__value">0</strong>
+      </div>
+      <div class="metric metric--fail">
+        <span class="metric__label">Fallos</span>
+        <strong id="statFail" class="metric__value">0</strong>
+      </div>
+      <div class="metric">
+        <span class="metric__label">Productos</span>
+        <strong id="statProducts" class="metric__value">0</strong>
+      </div>
+      <div class="metric">
+        <span class="metric__label">Archivo</span>
+        <strong id="statFile" class="metric__value">—</strong>
+      </div>
+      <div class="metric">
+        <span class="metric__label">Uptime</span>
+        <strong id="statUptime" class="metric__value">—</strong>
+      </div>
+    </section>
+
+    <section class="page-grid" aria-label="Detalle">
+      <article class="panel">
+        <div class="panel__head">
+          <h2>Motor</h2>
+        </div>
+        <dl class="kv">
+          <dt>Engine</dt>
+          <dd id="metaEngine">—</dd>
+          <dt>Archivo</dt>
+          <dd id="metaFile">—</dd>
+          <dt>Pendiente de flush</dt>
+          <dd id="metaDirty">—</dd>
+          <dt>Tope</dt>
+          <dd id="metaMax">—</dd>
+          <dt>Próximo ID</dt>
+          <dd id="metaNextId">—</dd>
+          <dt>Arranque</dt>
+          <dd id="metaStarted">—</dd>
+          <dt>Más antigua</dt>
+          <dd id="metaOldest">—</dd>
+          <dt>Más reciente</dt>
+          <dd id="metaNewest">—</dd>
+        </dl>
+      </article>
+
+      <article class="panel">
+        <div class="panel__head">
+          <h2>Por plataforma</h2>
+        </div>
+        <dl class="kv">
+          <dt>Facebook</dt>
+          <dd id="platFb">—</dd>
+          <dt>MercadoLibre</dt>
+          <dd id="platMl">—</dd>
+        </dl>
+        <p id="lastVisit" class="muted" style="margin-top: 1rem">Última visita: —</p>
+      </article>
+    </section>
+
+    <section class="panel" aria-labelledby="actions-db-title">
+      <div class="panel__head">
+        <h2 id="actions-db-title">Acciones (notificaciones)</h2>
+      </div>
+      <dl class="kv">
+        <dt>Archivo</dt>
+        <dd>data/actions.json</dd>
+        <dt>Registros</dt>
+        <dd id="actionsCount">—</dd>
+        <dt>WhatsApp / Gmail</dt>
+        <dd id="actionsChannels">—</dd>
+        <dt>Último envío</dt>
+        <dd id="actionsLast">—</dd>
+      </dl>
+      <p class="muted" style="margin-top: 0.85rem">
+        El historial de visitas y el de acciones son archivos distintos. Vaciar
+        visitas no borra Gmail/WhatsApp.
+      </p>
+    </section>
+
+    <section class="panel" aria-labelledby="products-title">
+      <div class="panel__head">
+        <h2 id="products-title">Por producto</h2>
+      </div>
+      <ul id="productStats" class="product-list"></ul>
+    </section>
+
+    <section class="panel action-card" aria-labelledby="danger-title">
+      <div class="panel__head">
+        <h2 id="danger-title">Zona de riesgo</h2>
+      </div>
+      <p>
+        Vacía el historial en memoria y reescribe <code>visits.json</code>. No
+        se puede deshacer.
+      </p>
+      <button type="button" id="clearDbBtn" class="danger-btn">Vaciar historial</button>
+    </section>
+
+    <script type="module" src="js/admin.js"></script>
+  </body>
+</html>

@@ -201,6 +201,7 @@ class MemoryDb {
     hourFrom = "",
     hourTo = "",
     platform = "all",
+    since = "",
   } = {}) {
     const safePage = Math.max(1, Number(page) || 1);
     const safeLimit = Math.min(100, Math.max(1, Number(limit) || 15));
@@ -241,6 +242,11 @@ class MemoryDb {
       end.setHours(23, 59, 59, 999);
       minTs = start.getTime();
       maxTs = end.getTime();
+    }
+
+    const sinceTs = Date.parse(since);
+    if (Number.isFinite(sinceTs)) {
+      minTs = minTs == null ? sinceTs : Math.max(minTs, sinceTs);
     }
 
     // Día concreto (date=YYYY-MM-DD) tiene prioridad sobre presets relativos
@@ -318,11 +324,13 @@ class MemoryDb {
    * Buckets de actividad para el gráfico.
    * Usa 30 min si hay datos; si no, amplía hasta cubrir visitas recientes (máx 24h).
    */
-  getTimeline() {
+  getTimeline({ since } = {}) {
     const now = Date.now();
+    const sinceTs = Date.parse(since);
     const stamped = this.visits
       .map((v) => ({ ...v, ts: v.iso ? Date.parse(v.iso) : NaN }))
-      .filter((v) => !Number.isNaN(v.ts));
+      .filter((v) => !Number.isNaN(v.ts))
+      .filter((v) => !Number.isFinite(sinceTs) || v.ts >= sinceTs);
 
     let windowMs = 30 * 60 * 1000;
     let start = now - windowMs;
@@ -375,8 +383,16 @@ class MemoryDb {
     };
   }
 
-  getFailures({ limit = 20 } = {}) {
-    return this.visits.filter((v) => v.status === "fail").slice(0, limit);
+  getFailures({ limit = 20, since } = {}) {
+    const sinceTs = Date.parse(since);
+    return this.visits
+      .filter((v) => v.status === "fail")
+      .filter((v) => {
+        if (!Number.isFinite(sinceTs)) return true;
+        const ts = v.iso ? Date.parse(v.iso) : NaN;
+        return Number.isFinite(ts) && ts >= sinceTs;
+      })
+      .slice(0, limit);
   }
 
   /**
@@ -439,21 +455,52 @@ class MemoryDb {
     };
   }
 
-  getStats() {
-    const failures = this.getFailures({ limit: 20 });
-    const successRate =
-      this.counters.total === 0
-        ? 0
-        : Math.round((this.counters.ok / this.counters.total) * 1000) / 10;
+  getStats({ since } = {}) {
+    const sinceTs = Date.parse(since);
+    const useSince = Number.isFinite(sinceTs);
+    const visits = useSince
+      ? this.visits.filter((v) => {
+          const ts = v.iso ? Date.parse(v.iso) : NaN;
+          return Number.isFinite(ts) && ts >= sinceTs;
+        })
+      : this.visits;
 
-    const productStats = [...this.byProduct.values()].sort(
-      (a, b) => b.fail - a.fail || b.total - a.total
-    );
+    const ok = useSince
+      ? visits.filter((v) => v.status === "ok").length
+      : this.counters.ok;
+    const fail = useSince
+      ? visits.filter((v) => v.status === "fail").length
+      : this.counters.fail;
+    const total = useSince ? visits.length : this.counters.total;
+    const successRate =
+      total === 0 ? 0 : Math.round((ok / total) * 1000) / 10;
+
+    const productMap = new Map();
+    if (useSince) {
+      for (const v of visits) {
+        let row = productMap.get(v.product);
+        if (!row) {
+          row = { product: v.product, ok: 0, fail: 0, total: 0 };
+          productMap.set(v.product, row);
+        }
+        row.total += 1;
+        if (v.status === "ok") row.ok += 1;
+        else row.fail += 1;
+      }
+    }
+
+    const productStats = (
+      useSince ? [...productMap.values()] : [...this.byProduct.values()]
+    ).sort((a, b) => b.fail - a.fail || b.total - a.total);
 
     const products = productStats.map((p) => p.product);
+    const failures = this.getFailures({ limit: 20, since });
 
-    const byPlatform = { mercadolibre: { ok: 0, fail: 0, total: 0 }, facebook: { ok: 0, fail: 0, total: 0 } };
-    for (const v of this.visits) {
+    const byPlatform = {
+      mercadolibre: { ok: 0, fail: 0, total: 0 },
+      facebook: { ok: 0, fail: 0, total: 0 },
+    };
+    for (const v of visits) {
       const key = resolvePlatform(v.platform, v.url);
       byPlatform[key].total += 1;
       if (v.status === "ok") byPlatform[key].ok += 1;
@@ -461,17 +508,17 @@ class MemoryDb {
     }
 
     return {
-      total: this.counters.total,
-      ok: this.counters.ok,
-      fail: this.counters.fail,
+      total,
+      ok,
+      fail,
       successRate,
-      lastVisit: this.visits[0] || null,
+      lastVisit: visits[0] || null,
       lastFailure: failures[0] || null,
       recentFailures: failures,
       productStats,
       products,
       byPlatform,
-      timeline: this.getTimeline(),
+      timeline: this.getTimeline({ since }),
       memory: {
         engine: "memory",
         startedAt: this.startedAt,
@@ -484,15 +531,38 @@ class MemoryDb {
   }
 
   getMeta() {
+    let fileBytes = 0;
+    try {
+      fileBytes = fs.statSync(DB_FILE).size;
+    } catch {
+      fileBytes = 0;
+    }
+
+    const newest = this.visits[0] || null;
+    const oldest = this.visits.length
+      ? this.visits[this.visits.length - 1]
+      : null;
+
     return {
       engine: "memory",
       nextId: this.nextId,
       counts: { ...this.counters },
+      visitsInMemory: this.visits.length,
       productsTracked: this.byProduct.size,
       startedAt: this.startedAt,
+      uptimeMs: Date.now() - Date.parse(this.startedAt),
       maxVisits: MAX_VISITS,
       file: DB_FILE,
+      fileRel: "data/visits.json",
+      fileBytes,
       dirty: this._dirty,
+      persisted: true,
+      oldestVisit: oldest
+        ? { id: oldest.id, iso: oldest.iso, product: oldest.product }
+        : null,
+      newestVisit: newest
+        ? { id: newest.id, iso: newest.iso, product: newest.product }
+        : null,
     };
   }
 
@@ -518,8 +588,8 @@ export function getHistory(opts) {
   return memoryDb.getHistory(opts);
 }
 
-export function getStats() {
-  return memoryDb.getStats();
+export function getStats(opts) {
+  return memoryDb.getStats(opts);
 }
 
 export function getDailyReport(opts) {
