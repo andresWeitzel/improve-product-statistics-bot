@@ -3,28 +3,28 @@
 </div>
 
 <div align="right">
-  <img width="26" height="26" src="./doc/assets/icons/backend/javascript-typescript/svg/nodejs.svg" alt="Node.js" />
+  <img width="26" height="26" src="./doc/assets/icons/backend/javascript-typescript/svg/nodejs-color.svg" alt="Node.js" />
   &nbsp;
-  <img width="26" height="26" src="./doc/assets/icons/backend/javascript-typescript/svg/express-js.svg" alt="Express" />
+  <img width="26" height="26" src="./doc/assets/icons/backend/javascript-typescript/svg/express-mark.svg" alt="Express" />
   &nbsp;
-  <img width="26" height="26" src="./doc/assets/icons/devops/svg/docker.svg" alt="Docker" />
+  <img width="26" height="26" src="./doc/assets/icons/devops/png/docker.png" alt="Docker" />
   &nbsp;
-  <img width="26" height="26" src="./doc/assets/icons/devops/svg/npm.svg" alt="npm" />
+  <img width="26" height="26" src="./doc/assets/icons/devops/png/npm.png" alt="npm" />
   &nbsp;
-  <img width="26" height="26" src="./doc/assets/icons/devops/svg/git.svg" alt="Git" />
+  <img width="26" height="26" src="./doc/assets/icons/devops/png/git.png" alt="Git" />
   &nbsp;
-  <img width="26" height="26" src="./doc/assets/icons/devops/svg/github.svg" alt="GitHub" />
+  <img width="26" height="26" src="./doc/assets/icons/devops/svg/github-mark.svg" alt="GitHub" />
 </div>
 
 <br>
 
 <div align="right">
   <a href="./doc/assets/translation/README.es.md" target="_blank">
-    <img src="./doc/assets/translation/arg-flag.svg" width="48" height="30" alt="Español" />
+    <img src="./doc/assets/translation/arg-flag.svg" width="48" height="36" alt="Español" />
   </a>
   &nbsp;
   <a href="./README.md" target="_blank">
-    <img src="./doc/assets/translation/eeuu-flag.svg" width="48" height="30" alt="English" />
+    <img src="./doc/assets/translation/eeuu-flag.svg" width="48" height="36" alt="English" />
   </a>
 </div>
 

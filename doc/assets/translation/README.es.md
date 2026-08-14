@@ -1,36 +1,30 @@
-# Improve Product Statistics Bot — Español
-
-Versión en español del [README principal](../../../README.md).
-
----
-
 <div align="center">
   <img src="../home_readme.png" alt="Improve Product Statistics Bot — Monitor" width="680" />
 </div>
 
 <div align="right">
-  <img width="26" height="26" src="../icons/backend/javascript-typescript/svg/nodejs.svg" alt="Node.js" />
+  <img width="26" height="26" src="../icons/backend/javascript-typescript/svg/nodejs-color.svg" alt="Node.js" />
   &nbsp;
-  <img width="26" height="26" src="../icons/backend/javascript-typescript/svg/express-js.svg" alt="Express" />
+  <img width="26" height="26" src="../icons/backend/javascript-typescript/svg/express-mark.svg" alt="Express" />
   &nbsp;
-  <img width="26" height="26" src="../icons/devops/svg/docker.svg" alt="Docker" />
+  <img width="26" height="26" src="../icons/devops/png/docker.png" alt="Docker" />
   &nbsp;
-  <img width="26" height="26" src="../icons/devops/svg/npm.svg" alt="npm" />
+  <img width="26" height="26" src="../icons/devops/png/npm.png" alt="npm" />
   &nbsp;
-  <img width="26" height="26" src="../icons/devops/svg/git.svg" alt="Git" />
+  <img width="26" height="26" src="../icons/devops/png/git.png" alt="Git" />
   &nbsp;
-  <img width="26" height="26" src="../icons/devops/svg/github.svg" alt="GitHub" />
+  <img width="26" height="26" src="../icons/devops/svg/github-mark.svg" alt="GitHub" />
 </div>
 
 <br>
 
 <div align="right">
   <a href="./README.es.md" target="_blank">
-    <img src="./arg-flag.svg" width="48" height="30" alt="Español" />
+    <img src="./arg-flag.svg" width="48" height="36" alt="Español" />
   </a>
   &nbsp;
   <a href="../../../README.md" target="_blank">
-    <img src="./eeuu-flag.svg" width="48" height="30" alt="English" />
+    <img src="./eeuu-flag.svg" width="48" height="36" alt="English" />
   </a>
 </div>
 
@@ -85,14 +79,16 @@ Bot de automatización que **visita publicaciones de Marketplace** (Facebook act
 
 </details>
 
----
+<br>
 
 ## Sección 1) Descripción, configuración y tecnologías
 
 ### 1.0) Descripción [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 Servicio Node.js + Puppeteer: abre URLs de listings en navegador headless, registra OK/fallo y muestra una UI de operaciones en el puerto **9008**.
 
@@ -197,7 +193,9 @@ Abrí [http://localhost:9008](http://localhost:9008/).
 ### 1.2) Estructura [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 Misma estructura que el README en inglés: `public/`, `src/platforms`, `src/notifications`, `src/db`, `scripts/`, `doc/assets/`, `Dockerfile`, `docker-compose.yml`, `*.urls.example.json` (los `*.urls.json` reales van gitignored).
 
@@ -208,20 +206,24 @@ Persistencia en `data/` (gitignored): `visits.json`, `actions.json`, perfiles de
 ### 1.3) Tecnologías [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 Node.js, Express, Socket.IO, Puppeteer (+ stealth), Nodemailer (Gmail), CallMeBot (WhatsApp), Docker, HTML/CSS/JS vanilla.
 
 </details>
 
----
+<br>
 
 ## Sección 2) Flujo de uso
 
 ### 2.0) Flujo de la app [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 Arranque → carga DB → agenda reporte → bots activos visitan → UI Monitor / Acciones / Admin.
 
@@ -230,7 +232,9 @@ Arranque → carga DB → agenda reporte → bots activos visitan → UI Monitor
 ### 2.1) Monitor [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 <p align="center">
   <img src="../monitor_readme.png" alt="Monitor" width="720" />
@@ -243,7 +247,9 @@ Métricas, gráficos, filtros e historial. Vaciar visitas solo desde **Base de d
 ### 2.2) Acciones (Gmail y CallMeBot) [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 <p align="center">
   <img src="../actions_readme.png" alt="Acciones" width="720" />
@@ -263,7 +269,9 @@ Métricas, gráficos, filtros e historial. Vaciar visitas solo desde **Base de d
 ### 2.3) Base de datos [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 <p align="center">
   <img src="../admin_readme.png" alt="Base de datos" width="720" />
@@ -281,7 +289,9 @@ Vaciar visitas **no** borra el log de acciones.
 ### 2.4) Política de notificaciones [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 | Evento | Canal |
 |--------|-------|
@@ -293,14 +303,16 @@ Variables clave: ver `.env.example` (`MAIL_*`, `WHATSAPP_*`, `REPORT_HOUR`).
 
 </details>
 
----
+<br>
 
 ## Sección 3) Pruebas, Docker y referencias
 
 ### 3.0) Prueba funcional [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 1. UI en `:9008` conectada.
 2. `npm run whatsapp:test`
@@ -312,7 +324,9 @@ Variables clave: ver `.env.example` (`MAIL_*`, `WHATSAPP_*`, `REPORT_HOUR`).
 ### 3.1) Docker (recomendado en Windows) [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 ```text
 1) Docker Desktop → Engine running
@@ -333,7 +347,9 @@ Puerto `9008`, volumen `./data`, Chromium en `/usr/bin/chromium`.
 ### 3.2) Contribuir [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 Fork → branch → commit → PR. No subir `.env` ni secretos.
 
@@ -342,7 +358,9 @@ Fork → branch → commit → PR. No subir `.env` ni secretos.
 ### 3.3) Licencia [🔝](#índice-)
 
 <details>
-<summary>Ver detalle</summary>
+  <summary>Ver detalle</summary>
+
+<br>
 
 ISC — [Andrés Weitzel](https://github.com/andresWeitzel).
 
