@@ -38,7 +38,7 @@ Este es un software de operación que **visita, mide, alerta y reporta**: un bot
 
 **UI local:** [http://localhost:9008](http://localhost:9008/)
 
-* [Video de pruebas funcionales](https://www.youtube.com/watch?v=QMlpFdOQHfI) <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI" target="_blank"><img src="../icons/social-networks/yt.svg" width="20" alt="YouTube" /></a>
+* [Video de pruebas funcionales](https://www.youtube.com/watch?v=Fk-FQI7kQJA&list=PLNYRp4eRA2Uk&index=2) <a href="https://www.youtube.com/watch?v=Fk-FQI7kQJA&list=PLNYRp4eRA2Uk&index=2" target="_blank"><img src="../icons/social-networks/yt.svg" width="20" alt="YouTube" /></a>
 
 <br>
 
@@ -337,13 +337,13 @@ Variables clave: ver `.env.example` (`MAIL_*`, `WHATSAPP_*`, `REPORT_HOUR`).
 Cómo trabaja el bot (Monitor, Acciones, Base de datos, visitas y notificaciones):
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI" target="_blank">
-    <img src="https://img.youtube.com/vi/QMlpFdOQHfI/maxresdefault.jpg" alt="Improve Product Statistics Bot — funcionamiento" width="720" />
+  <a href="https://www.youtube.com/watch?v=Fk-FQI7kQJA&list=PLNYRp4eRA2Uk&index=2" target="_blank">
+    <img src="https://img.youtube.com/vi/Fk-FQI7kQJA/maxresdefault.jpg" alt="Improve Product Statistics Bot — funcionamiento" width="720" />
   </a>
 </p>
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI">Ver en YouTube</a>
+  <a href="https://www.youtube.com/watch?v=Fk-FQI7kQJA&list=PLNYRp4eRA2Uk&index=2">Ver en YouTube</a>
 </p>
 
 #### 3.0.2) Checklist

@@ -37,7 +37,7 @@
 This is operations software that **visits, measures, alerts and reports**: a 24/7 automation bot that opens your listings again and again so product views and stats improve. Built with **Node.js**, **Puppeteer**, **Express** and **Socket.IO**, it runs the headless loop, records every OK/fail, and puts you in control with a live **Monitor**, an **Actions** panel (Gmail + WhatsApp / CallMeBot) and a **Database** page on port **9008**. Drop it in local **Docker** and let it work while you sell.
 
 * [**UI (local):**](http://localhost:9008/)
-* [Functional tests video](https://www.youtube.com/watch?v=QMlpFdOQHfI) <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI" target="_blank"><img src="./doc/assets/icons/social-networks/yt.svg" width="20" alt="YouTube" /></a>
+* [Functional tests video](https://www.youtube.com/watch?v=Fk-FQI7kQJA&list=PLNYRp4eRA2Uk&index=2) <a href="https://www.youtube.com/watch?v=Fk-FQI7kQJA&list=PLNYRp4eRA2Uk&index=2" target="_blank"><img src="./doc/assets/icons/social-networks/yt.svg" width="20" alt="YouTube" /></a>
 
 <br>
 
@@ -439,13 +439,13 @@ Key `.env` flags (see `.env.example`):
 How the bot works (Monitor, Actions, Database, visits and notifications):
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI" target="_blank">
-    <img src="https://img.youtube.com/vi/QMlpFdOQHfI/maxresdefault.jpg" alt="Improve Product Statistics Bot — walkthrough" width="720" />
+  <a href="https://www.youtube.com/watch?v=Fk-FQI7kQJA&list=PLNYRp4eRA2Uk&index=2" target="_blank">
+    <img src="https://img.youtube.com/vi/Fk-FQI7kQJA/maxresdefault.jpg" alt="Improve Product Statistics Bot — walkthrough" width="720" />
   </a>
 </p>
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI">Watch on YouTube</a>
+  <a href="https://www.youtube.com/watch?v=Fk-FQI7kQJA&list=PLNYRp4eRA2Uk&index=2">Watch on YouTube</a>
 </p>
 
 #### 3.0.2) UI
