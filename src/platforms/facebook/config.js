@@ -1,18 +1,12 @@
+import { loadPlatformUrls } from "../shared/loadPlatformUrls.js";
+
 export const facebookConfig = {
   id: "facebook",
   label: "Facebook",
   short: "FB",
   enabled: true,
-  urls: {
-    "Cama cucheta":
-      "https://www.facebook.com/marketplace/item/1612217943579408/",
-    "Cama cucheta con escritorio ":
-      "https://www.facebook.com/marketplace/item/1854895969205721/",
-    "Multigym Everlast":
-      "https://www.facebook.com/marketplace/item/1592343702491847/",
-    "Multigimnasio Everlast":
-      "https://www.facebook.com/marketplace/item/1709798030171918/",
-  },
+  // URLs: facebook.urls.json (plantilla: facebook.urls.example.json)
+  urls: loadPlatformUrls("facebook"),
   pauseBetweenMs: 10000,
   pauseJitterMs: 5000,
   stayOnPageMs: 15000,

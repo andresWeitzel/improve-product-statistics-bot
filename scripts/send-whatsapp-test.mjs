@@ -12,6 +12,7 @@ import {
   getFailAlertMeta,
   formatTestMessage,
 } from "../src/notifications/index.js";
+import { recordWhatsAppTest } from "../src/db/actionsDb.js";
 
 console.log("📱 whatsapp:test → SOLO mensaje de conectividad");
 console.log("   (no manda fallo · no manda reporte diario)");
@@ -33,6 +34,7 @@ try {
   }
 
   const result = await sendWhatsAppText(text);
+  recordWhatsAppTest(result, "cli");
   if (result.ok) {
     if (result.queued) {
       console.log(

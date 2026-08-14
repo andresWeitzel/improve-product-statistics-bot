@@ -21,6 +21,9 @@ services:
     volumes:
       # Persist visit history + browser profiles across rebuilds
       - ./data:/app/data
+      # Listings editables sin rebuild (mismo nivel que .env.example)
+      - ./facebook.urls.json:/app/facebook.urls.json:ro
+      - ./mercadolibre.urls.json:/app/mercadolibre.urls.json:ro
     # Chromium needs extra shared memory; avoid /dev/shm crashes
     shm_size: "256mb"
     restart: unless-stopped
