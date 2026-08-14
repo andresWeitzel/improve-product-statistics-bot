@@ -24,7 +24,7 @@
   </a>
   &nbsp;
   <a href="../../../README.md" target="_blank">
-    <img src="./eeuu-flag.svg" width="48" height="36" alt="English" />
+    <img src="./eeuu-flag.png" width="48" height="36" alt="English" />
   </a>
 </div>
 
@@ -34,11 +34,9 @@
 
 </div>
 
-Bot de automatización que **visita publicaciones de Marketplace** (Facebook activo; MercadoLibre preparado pero deshabilitado) para mover estadísticas, con **monitor en vivo**, panel de **Acciones** (pruebas Gmail / WhatsApp) y página de **Base de datos**. Lo ideal es correrlo en **Docker** local 24/7.
+**Autoincrementador de visitas** para Marketplace: un bot de automatización 24/7 que abre tus publicaciones una y otra vez para que las vistas y las estadísticas del producto no se estanquen — sin estar refrescando a mano. Armado con **Node.js**, **Puppeteer**, **Express** y **Socket.IO**, corre el ciclo headless, registra cada OK/fallo y te deja el control con **Monitor** en vivo, panel de **Acciones** (Gmail + WhatsApp / CallMeBot) y **Base de datos** en el puerto **9008**. **Facebook** ya dispara; **MercadoLibre** queda listo para cuando baje el anti-bot. Lo metés en **Docker** local y que labure mientras vos vendés.
 
 **UI local:** [http://localhost:9008](http://localhost:9008/)
-
-> No es un chatbot conversacional: es un **bot de automatización** (visitas + monitor + alertas). CallMeBot solo entrega WhatsApp.
 
 <br>
 
@@ -90,17 +88,26 @@ Bot de automatización que **visita publicaciones de Marketplace** (Facebook act
 
 <br>
 
-Servicio Node.js + Puppeteer: abre URLs de listings en navegador headless, registra OK/fallo y muestra una UI de operaciones en el puerto **9008**.
+Es un **autoincrementador de visitas de Marketplace**: un bot de automatización pensado para empujar vistas y mantener en movimiento las estadísticas del producto mientras vos te dedicás a vender. No es un chatbot: es software de operación que visita, mide, alerta y reporta.
 
-Incluye:
+Para qué existe:
 
-* **Bots de visita:** Facebook Marketplace (`enabled: true`); MercadoLibre (`enabled: false`).
-* **Monitor (`/`):** métricas, gráficos, filtros, historial, fallos (Socket.IO).
-* **Acciones (`/actions.html`):** estado de canales, mostrar/ocultar teléfono y mail, tests, reporte diario, historial persistido.
-* **Base de datos (`/admin.html`):** meta de `visits.json`, resumen de `actions.json`, vaciar solo visitas.
-* **Notificaciones:** reporte 21:00 AR por Gmail + WhatsApp; fallos por WA si llega al instante, si no Gmail ya.
+* En Marketplace, el posicionamiento y la prueba social premian publicaciones **activas**. Refrescar a mano no escala.
+* Este bot convierte esa rutina en un **motor continuo de visitas**: abrir URL → permanecer en la página → registrar resultado → siguiente producto → repetir.
+* Mirás todo desde un panel local y recibís **Gmail / WhatsApp** cuando algo falla o cuando cierra el día.
 
-**Requisitos:** Node ≥ 18, Docker Desktop (recomendado), App Password de Gmail y/o CallMeBot.
+Qué entrega el producto:
+
+* **Ciclo automático de visitas:** Puppeteer (+ stealth) abre cada listing configurado, se queda el tiempo suficiente y registra OK o fallo.
+* **Multiplataforma:** Facebook Marketplace en vivo (`enabled: true`); MercadoLibre ya implementado y en espera (`enabled: false`) hasta que baje captcha / verificación.
+* **Monitor en vivo (`/`):** totales, tasa de éxito, gráficos, filtros, historial, últimas fallas y desglose por producto — Socket.IO, sin spamear F5.
+* **Panel Acciones (`/actions.html`):** estado de canales, secretos ocultos, tests de WhatsApp, simulacro de alerta, reporte diario (preview / Gmail / WA / ambos) e historial de envíos.
+* **Base de datos (`/admin.html`):** meta de visitas y del log de acciones, con vaciado seguro solo del historial de visitas.
+* **Notificaciones inteligentes:** digest ~**21:00 AR** (Gmail + WhatsApp); si hay fallo, WhatsApp al instante o **Gmail ya** cuando CallMeBot encola.
+* **Config sin tocar código:** URLs en `facebook.urls.json` / `mercadolibre.urls.json`; secretos en `.env`.
+* **Siempre encendido:** `npm run dev` para afinar, o **Docker Desktop** 24/7 en **9008** para operación local seria.
+
+**Requisitos:** Node ≥ 18, Docker Desktop (recomendado), App Password de Gmail y/o CallMeBot, navegador moderno para la UI.
 
 </details>
 
@@ -171,7 +178,7 @@ npm run report:preview
 
 ```text
 1) Docker Desktop → Engine running
-2) scripts\Start-Bot-Docker.bat
+2) Start-Bot-Docker.bat
 3) Día a día → Start/Stop del contenedor
 ```
 
@@ -197,7 +204,7 @@ Abrí [http://localhost:9008](http://localhost:9008/).
 
 <br>
 
-Misma estructura que el README en inglés: `public/`, `src/platforms`, `src/notifications`, `src/db`, `scripts/`, `doc/assets/`, `Dockerfile`, `docker-compose.yml`, `*.urls.example.json` (los `*.urls.json` reales van gitignored).
+Misma estructura que el README en inglés: `public/`, `src/platforms`, `src/notifications`, `src/db`, `scripts/`, `doc/assets/`, `Start-Bot-Docker.bat` / `.ps1` (raíz), `Dockerfile`, `docker-compose.yml`, `*.urls.example.json` (los `*.urls.json` reales van gitignored).
 
 Persistencia en `data/` (gitignored): `visits.json`, `actions.json`, perfiles de browser.
 
@@ -210,7 +217,16 @@ Persistencia en `data/` (gitignored): `visits.json`, `actions.json`, perfiles de
 
 <br>
 
-Node.js, Express, Socket.IO, Puppeteer (+ stealth), Nodemailer (Gmail), CallMeBot (WhatsApp), Docker, HTML/CSS/JS vanilla.
+| **Tecnología** | **Versión** | **Propósito** |
+| ------------- | ------------- | ------------- |
+| [Node.js](https://nodejs.org/) | **≥ 18 / 20 (Docker)** | **Runtime** |
+| [Express](https://expressjs.com/) | **4.x** | **API HTTP + UI estática** |
+| [Socket.IO](https://socket.io/) | **4.x** | **Monitor en vivo** |
+| [Puppeteer](https://pptr.dev/) + stealth | **21.x** | **Visitas headless** |
+| [Nodemailer](https://nodemailer.com/) | **9.x** | **Gmail (App Password)** |
+| [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) | **API** | **Alertas WhatsApp** |
+| [Docker](https://www.docker.com/) | **Desktop** | **Contenedor local 24/7** |
+| HTML/CSS/JS vanilla | **ES modules** | **Monitor / Acciones / Admin** |
 
 </details>
 
@@ -330,7 +346,7 @@ Variables clave: ver `.env.example` (`MAIL_*`, `WHATSAPP_*`, `REPORT_HOUR`).
 
 ```text
 1) Docker Desktop → Engine running
-2) scripts\Start-Bot-Docker.bat
+2) Start-Bot-Docker.bat
 3) Start/Stop desde Docker Desktop
 ```
 

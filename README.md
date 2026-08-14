@@ -24,7 +24,7 @@
   </a>
   &nbsp;
   <a href="./README.md" target="_blank">
-    <img src="./doc/assets/translation/eeuu-flag.svg" width="48" height="36" alt="English" />
+    <img src="./doc/assets/translation/eeuu-flag.png" width="48" height="36" alt="English" />
   </a>
 </div>
 
@@ -34,7 +34,7 @@
 
 </div>
 
-Automation bot that **visits Marketplace listings** (Facebook active; MercadoLibre prepared but disabled) to keep product statistics moving, with a live **monitor UI**, an **actions panel** (Gmail / WhatsApp tests), and a **database admin** page. Runs best as a local **Docker** container 24/7.
+**Visit auto-incrementer** for Marketplace: a 24/7 automation bot that opens your product listings again and again so view counts and product stats keep climbing — without you refreshing pages by hand. Built with **Node.js**, **Puppeteer**, **Express** and **Socket.IO**, it runs a headless visit loop, tracks every OK/fail, and puts you in control with a live **Monitor**, an **Actions** panel (Gmail + WhatsApp / CallMeBot) and a **Database** admin on port **9008**. **Facebook** is firing today; **MercadoLibre** is ready when anti-bot allows. Drop it in local **Docker** and let it work while you sell.
 
 **UI (local):** [http://localhost:9008](http://localhost:9008/)
 
@@ -77,35 +77,42 @@ Automation bot that **visits Marketplace listings** (Facebook active; MercadoLib
 
 </details>
 
----
+<br>
 
 ## Section 1) Description, configuration and technologies
 
 ### 1.0) Description [🔝](#index-)
 
 <details>
-<summary>View details</summary>
+  <summary>View details</summary>
 
-**Improve Product Statistics Bot** is a Node.js + Puppeteer automation service: it opens listing URLs in a headless browser, records OK/fail visits, and exposes a dark-themed ops UI on port **9008**.
+<br>
 
-It is **not** a conversational chatbot. It is an **automation / bot-services** project (visit loop + monitor + alerts). CallMeBot is only the WhatsApp delivery channel.
+This is a **Marketplace visit auto-incrementer**: an automation bot whose job is to push listing views and keep product statistics moving while you focus on selling. It is **not** a chat bot — it is ops software that visits, measures, alerts and reports.
 
-The project includes:
+Why it exists:
 
-* **Visit bots:** Facebook Marketplace (`enabled: true`); MercadoLibre scaffolded (`enabled: false`, captcha / anti-bot).
-* **Monitor (`/`):** live metrics, activity charts, filters, history table, failure list (Socket.IO).
-* **Actions (`/actions.html`):** channel status, secret show/hide for phone/email, test WhatsApp, simulate fail alert, send daily report (Gmail / WA / both), persisted action log with filters.
-* **Database (`/admin.html`):** visits DB meta (`data/visits.json`), action-log summary (`data/actions.json`), clear visits only.
-* **Notifications:**
-  * Daily report at **21:00 AR** → Gmail + WhatsApp.
-  * Visit failure → WhatsApp if immediate; if CallMeBot queues/rate-limits → **Gmail immediately**.
+* Marketplace rankings and social proof reward **active listings**. Manual refresh does not scale.
+* This bot turns that grind into a **continuous visit engine**: open URL → stay on page → log result → next product → repeat.
+* You watch everything from a local dashboard and get **Gmail / WhatsApp** when something breaks or when the day closes.
+
+What the product delivers:
+
+* **Auto visit loop:** Puppeteer (+ stealth) opens each configured listing, stays long enough to count as a real visit, and records OK or fail.
+* **Multi-platform ready:** Facebook Marketplace is live (`enabled: true`); MercadoLibre is built in and waiting (`enabled: false`) until captcha / verification cools down.
+* **Live Monitor (`/`):** totals, success rate, live charts, filters, full history, latest failures and per-product breakdown — Socket.IO, no refresh spam.
+* **Actions panel (`/actions.html`):** channel status, secret show/hide, WhatsApp tests, fail-alert drills, daily report send (preview / Gmail / WA / both) plus persisted send history.
+* **Database admin (`/admin.html`):** visit store and action-log insight, with a safe clear for visits only.
+* **Smart notifications:** daily digest ~**21:00 AR** (Gmail + WhatsApp); on fail, WhatsApp if instant, otherwise **Gmail immediately** when CallMeBot queues.
+* **Zero-code listing edits:** drop URLs in `facebook.urls.json` / `mercadolibre.urls.json`; secrets stay in `.env`.
+* **Always-on runtime:** `npm run dev` for tweaks, or **Docker Desktop** 24/7 on **9008** for production-style local ops.
 
 **Requirements:**
 
 * [Node.js](https://nodejs.org/) ≥ 18 (local `npm run dev`).
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/) (recommended for 24/7 on Windows).
-* Gmail App Password (optional but needed for mail).
-* CallMeBot phone + apikey (optional but needed for WhatsApp).
+* Gmail App Password (reports / fail fallback).
+* CallMeBot phone + apikey (WhatsApp).
 * Modern browser for the UI.
 
 </details>
@@ -188,7 +195,7 @@ Preferred way to keep the bot running:
 
 ```text
 1) Start Docker Desktop → wait until Engine is running
-2) scripts\Start-Bot-Docker.bat   (or npm run docker:up)
+2) Start-Bot-Docker.bat   (or .\Start-Bot-Docker.ps1 / npm run docker:up)
 3) Day-to-day → Start / Stop the container in Docker Desktop
 ```
 
@@ -247,7 +254,6 @@ improve-product-statistics-bot/
 │   │   └── actionsDb.js            # action log → data/actions.json
 │   └── utils/
 ├── scripts/
-│   ├── Start-Bot-Docker.bat|.ps1   # Build + compose up
 │   ├── send-daily-report.mjs
 │   ├── send-whatsapp-test.mjs
 │   └── send-fail-alert.mjs
@@ -261,6 +267,8 @@ improve-product-statistics-bot/
 │       ├── whatsapp_report_readme.png
 │       ├── icons/
 │       └── translation/
+├── Start-Bot-Docker.bat            # Windows: build + compose up (double-click)
+├── Start-Bot-Docker.ps1            # Same launcher (PowerShell)
 ├── Dockerfile
 ├── docker-compose.yml
 ├── .env.example
@@ -276,18 +284,20 @@ improve-product-statistics-bot/
 ### 1.3) Technologies [🔝](#index-)
 
 <details>
-<summary>View details</summary>
+  <summary>View details</summary>
+
+<br>
 
 | **Technology** | **Version** | **Purpose** |
 | ------------- | ------------- | ------------- |
-| [Node.js](https://nodejs.org/) | ≥ 18 / 20 (Docker) | Runtime |
-| [Express](https://expressjs.com/) | 4.x | HTTP API + static UI |
-| [Socket.IO](https://socket.io/) | 4.x | Live monitor updates |
-| [Puppeteer](https://pptr.dev/) + stealth | 21.x | Headless visits |
-| [Nodemailer](https://nodemailer.com/) | 9.x | Gmail (App Password) |
-| [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) | API | WhatsApp personal alerts |
-| [Docker](https://www.docker.com/) | Desktop | 24/7 local container |
-| Vanilla HTML/CSS/JS | ES modules | Monitor / Actions / Admin UI |
+| [Node.js](https://nodejs.org/) | **≥ 18 / 20 (Docker)** | **Runtime** |
+| [Express](https://expressjs.com/) | **4.x** | **HTTP API + static UI** |
+| [Socket.IO](https://socket.io/) | **4.x** | **Live monitor updates** |
+| [Puppeteer](https://pptr.dev/) + stealth | **21.x** | **Headless visits** |
+| [Nodemailer](https://nodemailer.com/) | **9.x** | **Gmail (App Password)** |
+| [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) | **API** | **WhatsApp personal alerts** |
+| [Docker](https://www.docker.com/) | **Desktop** | **24/7 local container** |
+| Vanilla HTML/CSS/JS | **ES modules** | **Monitor / Actions / Admin UI** |
 
 **Official docs:**
 
@@ -300,7 +310,7 @@ improve-product-statistics-bot/
 
 </details>
 
----
+<br>
 
 ## Section 2) Usage flow and behavior
 
@@ -412,7 +422,7 @@ Key `.env` flags (see `.env.example`):
 
 </details>
 
----
+<br>
 
 ## Section 3) Testing, Docker and references
 
@@ -471,7 +481,7 @@ Env: `.env` via `env_file` in `docker-compose.yml`
 
 ```text
 1) Docker Desktop → Engine running
-2) First load → scripts\Start-Bot-Docker.bat (or .ps1 / npm run docker:up)
+2) First load → Start-Bot-Docker.bat (or .\Start-Bot-Docker.ps1 / npm run docker:up)
 3) Day to day → Start / Stop in Docker Desktop
 ```
 
