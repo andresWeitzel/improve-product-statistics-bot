@@ -34,9 +34,10 @@
 
 </div>
 
-**Visit auto-incrementer** for Marketplace: a 24/7 automation bot that opens your product listings again and again so view counts and product stats keep climbing — without you refreshing pages by hand. Built with **Node.js**, **Puppeteer**, **Express** and **Socket.IO**, it runs a headless visit loop, tracks every OK/fail, and puts you in control with a live **Monitor**, an **Actions** panel (Gmail + WhatsApp / CallMeBot) and a **Database** admin on port **9008**. **Facebook** is firing today; **MercadoLibre** is ready when anti-bot allows. Drop it in local **Docker** and let it work while you sell.
+This is operations software that **visits, measures, alerts and reports**: a 24/7 automation bot that opens your listings again and again so product views and stats improve. Built with **Node.js**, **Puppeteer**, **Express** and **Socket.IO**, it runs the headless loop, records every OK/fail, and puts you in control with a live **Monitor**, an **Actions** panel (Gmail + WhatsApp / CallMeBot) and a **Database** page on port **9008**. Drop it in local **Docker** and let it work while you sell.
 
-**UI (local):** [http://localhost:9008](http://localhost:9008/)
+* [**UI (local):**](http://localhost:9008/)
+* [Functional tests video](https://www.youtube.com/watch?v=QMlpFdOQHfI) <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI" target="_blank"><img src="./doc/assets/icons/social-networks/yt.svg" width="20" alt="YouTube" /></a>
 
 <br>
 
@@ -431,13 +432,29 @@ Key `.env` flags (see `.env.example`):
 <details>
 <summary>View details</summary>
 
-#### 3.0.1) UI
+<br>
+
+#### 3.0.1) Walkthrough video
+
+How the bot works (Monitor, Actions, Database, visits and notifications):
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI" target="_blank">
+    <img src="https://img.youtube.com/vi/QMlpFdOQHfI/maxresdefault.jpg" alt="Improve Product Statistics Bot — walkthrough" width="720" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=QMlpFdOQHfI">Watch on YouTube</a>
+</p>
+
+#### 3.0.2) UI
 
 1. Open `http://localhost:9008/` → connection **Conectado**, metrics updating.
 2. Open `/actions.html` → Gmail/WA pills show configured state; secrets stay masked until **Mostrar**.
 3. Open `/admin.html` → visits meta + actions summary load.
 
-#### 3.0.2) Case — WhatsApp test
+#### 3.0.3) Case — WhatsApp test
 
 ```bash
 npm run whatsapp:test
@@ -445,7 +462,7 @@ npm run whatsapp:test
 
 Expect one short connectivity message in CallMeBot (and a row in Acciones historial).
 
-#### 3.0.3) Case — Fail alert
+#### 3.0.4) Case — Fail alert
 
 ```bash
 npm run whatsapp:fail:preview
@@ -454,7 +471,7 @@ npm run whatsapp:fail
 
 Expect WA and/or Gmail according to queue policy.
 
-#### 3.0.4) Case — Daily report
+#### 3.0.5) Case — Daily report
 
 ```bash
 npm run report:preview
