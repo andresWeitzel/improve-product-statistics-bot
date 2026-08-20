@@ -1,0 +1,60 @@
+# Blueprint Render — coexiste con Docker local (docker-compose.yml).
+# Local: JSON en raíz + .env | Render: mismas claves en Environment.
+#
+# Dashboard: New → Blueprint → este repo, o New → Web Service → Docker.
+# Pegá FACEBOOK_URLS_JSON / MERCADOLIBRE_URLS_JSON en una sola línea.
+
+services:
+  - type: web
+    name: improve-product-statistics-bot
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: America/Argentina/Buenos_Aires
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: "true"
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/chromium
+
+      # Credenciales (completar en el panel; sync: false = no van al repo)
+      - key: MAIL_ENABLED
+        value: "true"
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASS
+        sync: false
+      - key: MAIL_TO
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_FAIL_ENABLED
+        value: "true"
+
+      - key: REPORT_HOUR
+        value: "21"
+      - key: REPORT_PLATFORM
+        value: facebook
+
+      - key: WHATSAPP_ENABLED
+        value: "true"
+      - key: WHATSAPP_PHONE
+        sync: false
+      - key: WHATSAPP_APIKEY
+        sync: false
+      - key: WHATSAPP_REPORT_ENABLED
+        value: "true"
+
+      # Plataformas + listings (JSON en una línea, mismo formato que *.urls.json)
+      - key: FACEBOOK_ENABLED
+        value: "true"
+      - key: MERCADOLIBRE_ENABLED
+        value: "false"
+      - key: FACEBOOK_URLS_JSON
+        sync: false
+      - key: MERCADOLIBRE_URLS_JSON
+        sync: false
